@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:orientation="vertical"
+  android:layout_height="match_parent"
+  tools:context=".ProductFragments.ProductCartFragment">
+
+  <LinearLayout
+    android:id="@+id/circleProgressBarLayout"
+    android:visibility="gone"
+    android:gravity="center_vertical|center_horizontal"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <com.lsjwzh.widget.materialloadingprogressbar.CircleProgressBar
+      android:id="@+id/circleProgressBar"
+      android:layout_width="60dp"
+      android:layout_height="60dp"
+      android:visibility="gone"
+      app:mlpb_arrow_height="5dp"
+      app:mlpb_arrow_width="10dp"
+      app:mlpb_progress_stoke_width="4dp"/>
+  </LinearLayout>
+  <android.support.v7.widget.RecyclerView
+    android:padding="5dp"
+    android:id="@+id/recyclerViewShowCartItems"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+  </android.support.v7.widget.RecyclerView>
+<Button
+  android:text="Total Amount"
+  android:id="@+id/buttonTotalAmount"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"/>
+</LinearLayout>

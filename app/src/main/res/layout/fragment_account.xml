@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  tools:context=".fragments.AccountFragment">
+
+  <TextView
+    android:layout_marginTop="15dp"
+    android:textSize="20sp"
+    android:textAlignment="center"
+    android:id="@+id/textViewEmail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"/>
+  <Button
+    android:text="Logout"
+    android:layout_marginRight="15dp"
+    android:layout_marginLeft="15dp"
+    android:layout_marginTop="15dp"
+    android:id="@+id/buttonLogout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"/>
+  <Button
+    android:text="Sell With Us"
+    android:layout_marginRight="15dp"
+    android:layout_marginLeft="15dp"
+    android:layout_marginTop="15dp"
+    android:id="@+id/buttonSellWithUs"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"/>
+</LinearLayout>
