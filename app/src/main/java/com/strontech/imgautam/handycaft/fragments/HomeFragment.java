@@ -97,17 +97,17 @@ public class HomeFragment extends Fragment {
     recyclerView.setLayoutManager(layoutManager);
     // recyclerView.addItemDecoration(new );
 
-//    recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),2, GridLayoutManager.VERTICAL, false){
-//      @Override
-//      public boolean canScrollHorizontally() {
-//        return false;
-//      }
-//
-//      @Override
-//      public boolean canScrollVertically() {
-//        return false;
-//      }
-//    });
+  //    recyclerView.setLayoutManager(new GridLayoutManager(getActivity(),2, GridLayoutManager.VERTICAL, false){
+  //      @Override
+  //      public boolean canScrollHorizontally() {
+  //        return false;
+  //      }
+  //
+  //      @Override
+  //      public boolean canScrollVertically() {
+  //        return false;
+  //      }
+  //    });
 
     recyclerView.setItemAnimator(new DefaultItemAnimator());
   }

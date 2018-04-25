@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -39,7 +40,6 @@ public class ProductCartFragment extends Fragment {
 
 
   private RecyclerView recyclerView;
-  private Button buttonTotalAmount;
 
   private RecyclerView.Adapter adapter;
 
@@ -50,6 +50,13 @@ public class ProductCartFragment extends Fragment {
 
   private List<CartHandiCraft> cartHandiCrafts;
 
+  private TextView textViewItemCount;
+  private TextView textViewTotalAmount;
+  private TextView textViewTotalAmountPayable;
+
+  private Button buttonTotalAmount;
+  private Button buttonContinueBuy;
+
 
 
 
@@ -57,6 +64,7 @@ public class ProductCartFragment extends Fragment {
   int position=0;
 
   String initial_price;
+  int sumSp;
 
 
   public ProductCartFragment() {
@@ -86,8 +94,12 @@ public class ProductCartFragment extends Fragment {
     circleProgressBarLayout=view.findViewById(R.id.circleProgressBarLayout);
     circleProgressBar=view.findViewById(R.id.circleProgressBar);
 
+    textViewItemCount=view.findViewById(R.id.textViewItemCount);
+    textViewTotalAmount=view.findViewById(R.id.textViewTotalAmount);
+    textViewTotalAmountPayable=view.findViewById(R.id.textViewTotalAmountPayable);
 
-
+    buttonTotalAmount=view.findViewById(R.id.buttonTotalAmount);
+    buttonContinueBuy=view.findViewById(R.id.buttonContinueBuy);
   }
 
   /**
@@ -123,10 +135,21 @@ public class ProductCartFragment extends Fragment {
 
 
   private void setUpRecyclerView() {
-    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-    recyclerView.setLayoutManager(layoutManager);
-    recyclerView.setItemAnimator(new DefaultItemAnimator());
+//    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+//    recyclerView.setLayoutManager(layoutManager);
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()){
+      @Override
+      public boolean canScrollHorizontally() {
+        return false;
+      }
+
+      @Override
+      public boolean canScrollVertically() {
+        return false;
+      }
+    });
+    recyclerView.setItemAnimator(new DefaultItemAnimator());
   }
 
 
@@ -134,33 +157,46 @@ public class ProductCartFragment extends Fragment {
     circleProgressBarLayout.setVisibility(View.VISIBLE);
     circleProgressBar.setVisibility(View.VISIBLE);
 
+
+    final List<String> updatedSpList=new ArrayList<String>();
+
     databaseReference.addValueEventListener(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
         circleProgressBarLayout.setVisibility(View.GONE);
         circleProgressBar.setVisibility(View.GONE);
 
-        if (cartHandiCrafts != null) {
+        if (cartHandiCrafts != null && updatedSpList !=null) {
           cartHandiCrafts.clear();
+          updatedSpList.clear();
         }
         for (DataSnapshot postDataSnapshot : dataSnapshot.getChildren()) {
           CartHandiCraft cartHandiCraft = postDataSnapshot.getValue(CartHandiCraft.class);
           cartHandiCrafts.add(cartHandiCraft);
-
+          updatedSpList.add(cartHandiCraft.getProduct_sp());
 
           //get data....
-          if (cartHandiCraft != null) {
-            Log.d("Price: ","Product Price"+cartHandiCraft.getProduct_sp());
-          }
+//          if (cartHandiCraft != null) {
+//            Log.d("Price: ","Product Price"+cartHandiCraft.getProduct_sp());
+//          }
           //Toast.makeText(getActivity(), "Price: "+handiCraft.getProduct_sp(), Toast.LENGTH_SHORT).show();
 
         }
-
+        //Toast.makeText(getActivity(), ""+updatedSpList.toString(), Toast.LENGTH_SHORT).show();
+        sumSp=0;
+        for (int i=0; i<updatedSpList.size(); i++){
+          sumSp= sumSp+Integer.parseInt(updatedSpList.get(i));
+        }
         adapter = new ProductCartRecyclerAdapter(getActivity(), cartHandiCrafts);
         recyclerView.setAdapter(adapter);
         //position=adapter.getItemCount();
 
-       // Toast.makeText(getActivity(), "Price: "+handiCrafts., Toast.LENGTH_SHORT).show();
+        textViewItemCount.setText("Rs. "+cartHandiCrafts.size());
+        textViewTotalAmount.setText("Rs. "+sumSp);
+        textViewTotalAmountPayable.setText("Rs. "+sumSp);
+        buttonTotalAmount.setText("Rs. "+sumSp);
+
+        Toast.makeText(getActivity(), "Total amount: "+sumSp, Toast.LENGTH_SHORT).show();
       }
 
       @Override
