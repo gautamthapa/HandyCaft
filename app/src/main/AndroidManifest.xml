@@ -30,16 +30,16 @@
       android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
       android:label="@string/app_name"
       android:name="com.facebook.FacebookActivity"/>
-    <activity
-      android:exported="true"
-      android:name="com.facebook.CustomTabActivity">
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="2056384331241799"/>
-      </intent-filter>
-    </activity>
+    <!--<activity-->
+      <!--android:exported="true"-->
+      <!--android:name="com.facebook.CustomTabActivity">-->
+      <!--<intent-filter>-->
+        <!--<action android:name="android.intent.action.VIEW"/>-->
+        <!--<category android:name="android.intent.category.DEFAULT"/>-->
+        <!--<category android:name="android.intent.category.BROWSABLE"/>-->
+        <!--<data android:scheme="2056384331241799"/>-->
+      <!--</intent-filter>-->
+    <!--</activity>-->
 
     <activity
       android:label="@string/app_name"

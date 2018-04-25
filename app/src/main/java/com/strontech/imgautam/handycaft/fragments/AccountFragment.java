@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.strontech.imgautam.handycaft.R;
 import com.strontech.imgautam.handycaft.SellerFragments.AddProductFragment;
@@ -117,20 +118,7 @@ public class AccountFragment extends Fragment implements OnClickListener{
   }
 
 
-  /**
-   * This method is to logout
-   * */
-  private void logout(){
-    auth.signOut();
-    sharedPreferences.edit().remove("email").apply();
 
-    //restart activity
-    restartActivity();
-
-    FragmentTransaction ft=getFragmentManager().beginTransaction();
-    ft.replace(R.id.mainFrame, new HomeFragment());
-    ft.commit();
-  }
 
 
   @Override
@@ -154,6 +142,7 @@ public class AccountFragment extends Fragment implements OnClickListener{
 
       case R.id.buttonLogout:
         logout();
+        facebookLogout();
         break;
       case R.id.buttonSellWithUs:
         FragmentTransaction ft=getFragmentManager().beginTransaction();
@@ -161,6 +150,36 @@ public class AccountFragment extends Fragment implements OnClickListener{
         ft.commit();
     }
 
+  }
+
+  /**
+   * This method is to logout
+   * */
+  private void logout(){
+    auth.signOut();
+    sharedPreferences.edit().remove("email").apply();
+
+    //restart activity
+    restartActivity();
+
+    FragmentTransaction ft=getFragmentManager().beginTransaction();
+    ft.replace(R.id.mainFrame, new HomeFragment());
+    ft.commit();
+  }
+
+
+  /**
+   * This method is to Logout from facebook
+   * */
+  private void facebookLogout() {
+    LoginManager.getInstance().logOut();
+    sharedPreferences.edit().clear().apply();
+    //restart activity
+    restartActivity();
+
+    FragmentTransaction ft=getFragmentManager().beginTransaction();
+    ft.replace(R.id.mainFrame, new HomeFragment());
+    ft.commit();
   }
 
   /**

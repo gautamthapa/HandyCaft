@@ -155,6 +155,7 @@
       <Button
 
         android:id="@+id/buttonGoogleLogin"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -164,9 +165,11 @@
         android:layout_marginRight="5dp"
         android:paddingLeft="10dp"
         android:background="@drawable/button_bg"
-        android:drawableLeft="@drawable/google_logo"
+        android:drawableLeft="@drawable/googlelogo"
         android:drawingCacheQuality="auto"
-        android:text="Google"
+        android:gravity="start|center_vertical"
+        android:text="       Google"
+
         android:textAllCaps="false"
         android:textColor="@android:color/darker_gray"/>
 

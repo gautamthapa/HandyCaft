@@ -3,12 +3,19 @@ package com.strontech.imgautam.handycaft.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -24,6 +31,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,10 +45,13 @@ import com.strontech.imgautam.handycaft.fragments.HomeFragment;
 import com.strontech.imgautam.handycaft.fragments.LoginFragment;
 import com.strontech.imgautam.handycaft.fragments.AccountFragment;
 import com.strontech.imgautam.handycaft.helper.Converter;
+import de.hdodenhof.circleimageview.CircleImageView;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener,
     OnClickListener {
+
 
   private NavigationView navigationView;
   private DrawerLayout drawer;
@@ -47,7 +59,7 @@ public class MainActivity extends AppCompatActivity
   private LinearLayout linearLayoutUserLogin;
 
   private View navHeader;
-  private ImageView imageViewProfile;
+  private CircleImageView imageViewProfile;
   private TextView textViewName;
   private TextView textViewEmail;
   private Toolbar toolbar;
@@ -75,10 +87,25 @@ public class MainActivity extends AppCompatActivity
   SharedPreferences.Editor editor;
   String name;
   String email;
-  String imageUrl;
-  int size=0;
+  int size = 0;
+
+
+  //For Google
+  private String username_google;
+  private String email_google;
+  private String profile_pic_google;
+
+
+  //Facebook
+  String TAG = "MainActivity";
+  private String first_name;
+  private String last_name;
+  private String imageUrl;
+
+
 
   private Menu menu;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -95,17 +122,13 @@ public class MainActivity extends AppCompatActivity
     //SharedPreferences
     sharedPreferences = getSharedPreferences("myEmailPass", Context.MODE_PRIVATE);
 
-
-    databaseReference= FirebaseDatabase.getInstance().getReference();
-
-
+    databaseReference = FirebaseDatabase.getInstance().getReference();
 
     /**
      * Check Internet Connection
      * */
     //Check Internet Connection
     checkInternetConnection();
-
 
     invalidateOptionsMenu();
     //Navigation view drawer(Nav Header)
@@ -123,8 +146,50 @@ public class MainActivity extends AppCompatActivity
 
     //get data from sharedPreferences and set it
     email = sharedPreferences.getString("email", null);
+
+    //Google
+    username_google=sharedPreferences.getString("username_google",null);
+    email_google=sharedPreferences.getString("email_google",null);
+    profile_pic_google=sharedPreferences.getString("profile_pic_google",null);
+
+    //Facebook
+    first_name = sharedPreferences.getString("facebook_first_name", null);
+    last_name = sharedPreferences.getString("facebook_last_name", null);
+    imageUrl = sharedPreferences.getString("facebook_image_url", null);
+
     Toast.makeText(this, email, Toast.LENGTH_SHORT).show();
-    if (email != null) {
+
+    if (email !=null){
+      linearLayoutUserLogin.setVisibility(View.VISIBLE);
+      linearLayoutUserSignUp.setVisibility(View.GONE);
+      textViewName.setVisibility(View.GONE);
+      textViewEmail.setText(email);
+      loadHomeFragment();
+    }else if (first_name !=null || last_name != null || imageUrl != null){
+      linearLayoutUserLogin.setVisibility(View.VISIBLE);
+      linearLayoutUserSignUp.setVisibility(View.GONE);
+      textViewEmail.setVisibility(View.GONE);
+      //Facebook
+      textViewName.setText(first_name+" "+last_name);
+      new MainActivity.DownloadImage(imageViewProfile).execute(imageUrl);
+      loadHomeFragment();
+
+    }else if (username_google != null || email_google != null || profile_pic_google !=null){
+
+      linearLayoutUserLogin.setVisibility(View.VISIBLE);
+      linearLayoutUserSignUp.setVisibility(View.GONE);
+      //Google
+      textViewName.setText(username_google);
+      textViewEmail.setText(email_google);
+      Glide.with(MainActivity.this).load(profile_pic_google).into(imageViewProfile);
+
+      loadHomeFragment();
+    }
+
+/*
+    if (email != null || first_name != null || last_name != null
+        || username_google !=null || email_google != null || profile_pic_google!=null) {
+
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
       ft.replace(R.id.mainFrame, new HomeFragment());
       ft.commit();
@@ -132,19 +197,40 @@ public class MainActivity extends AppCompatActivity
       linearLayoutUserLogin.setVisibility(View.VISIBLE);
       linearLayoutUserSignUp.setVisibility(View.GONE);
       textViewEmail.setText(email);
-    } else {
+
+      //Google
+      textViewName.setText(username_google);
+      textViewEmail.setText(email_google);
+      Glide.with(MainActivity.this).load(profile_pic_google).into(imageViewProfile);
+
+      //Facebook
+      textViewName.setText(first_name+" "+last_name);
+      new MainActivity.DownloadImage(imageViewProfile).execute(imageUrl);
+
+*/
+
+      //Set via Glide
+      /*Glide.with(MainActivity.this).load(imageUrl).asBitmap()
+          .into(new BitmapImageViewTarget(imageViewProfile){
+            @Override
+            protected void setResource(Bitmap resource) {
+              RoundedBitmapDrawable drawable= RoundedBitmapDrawableFactory.create(getApplicationContext()
+                  .getResources(),resource);
+              drawable.setCircular(true);
+            }
+          });
+*/
+
+
+     else {
 
       Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
       linearLayoutUserSignUp.setVisibility(View.VISIBLE);
       linearLayoutUserLogin.setVisibility(View.GONE);
-      //Start Home Fragment
-      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-      ft.add(R.id.mainFrame, new HomeFragment(), "Home");
-      ft.commit();
-      drawer.closeDrawers();
-      fab.show();
-
+      loadHomeFragment();
     }
+
+
 
     //load toolbar titles from string resources
     activityTitles = getResources().getStringArray(R.array.nav_item_activity_titles);
@@ -157,6 +243,8 @@ public class MainActivity extends AppCompatActivity
             .setAction("Action", null).show();
       }
     });
+
+
 
     /**
      * load nav header data
@@ -186,41 +274,53 @@ public class MainActivity extends AppCompatActivity
 
   }
 
+  /**
+   * This method is Load Home Fragment
+   * */
+  private void loadHomeFragment(){
+    //Start Home Fragment
+    FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+    ft.add(R.id.mainFrame, new HomeFragment(), "Home");
+    ft.commit();
+    drawer.closeDrawers();
+    fab.show();
+  }
+
 
   /**
    * Check Internet Connection
-   * */
+   */
   private void checkInternetConnection() {
-  boolean isConnected= ConnectivityReceiver.isConnected();
-  showSnack(isConnected);
+    boolean isConnected = ConnectivityReceiver.isConnected();
+    showSnack(isConnected);
   }
 
   private void showSnack(boolean isConnected) {
     //Showing the status in SnackBar
 
-      String message;
-      int color;
-      if (isConnected){
-        message="Connected to Internet";
-        color= Color.WHITE;
-      }else {
-        message="Not Connected to Internet";
-        color= Color.RED;
-      }
+    String message;
+    int color;
+    if (isConnected) {
+      message = "Connected to Internet";
+      color = Color.WHITE;
+    } else {
+      message = "Not Connected to Internet";
+      color = Color.RED;
+    }
     //Toast.makeText(this, ""+message, Toast.LENGTH_SHORT).show();
 
-      Snackbar snackbar=Snackbar.make(findViewById(R.id.mainFrame),message, Snackbar.LENGTH_LONG);
+    Snackbar snackbar = Snackbar.make(findViewById(R.id.mainFrame), message, Snackbar.LENGTH_LONG);
 
-      View sbView=snackbar.getView();
-      TextView textView=sbView.findViewById(android.support.design.R.id.snackbar_text);
-      textView.setTextColor(color);
-      snackbar.show();
+    View sbView = snackbar.getView();
+    TextView textView = sbView.findViewById(android.support.design.R.id.snackbar_text);
+    textView.setTextColor(color);
+    snackbar.show();
   }
 
 
   /**
    * This method is to count Total child of Firebase cart items
-   * */
+   */
   private void countTotalChildFirebase() {
     databaseReference.child("Cart Items").addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
@@ -232,15 +332,14 @@ public class MainActivity extends AppCompatActivity
 //
 //        }
 
-        size= (int) dataSnapshot.getChildrenCount();
+        size = (int) dataSnapshot.getChildrenCount();
 
+        MenuItem menuItem = null;
+        menuItem = menu.findItem(R.id.cart_action);
+        menuItem.setIcon(Converter
+            .convertLayoutToImage(MainActivity.this, size, R.drawable.ic_shopping_cart_black_24dp));
 
-        MenuItem menuItem= null;
-          menuItem = menu.findItem(R.id.cart_action);
-          menuItem.setIcon(Converter.convertLayoutToImage(MainActivity.this, size, R.drawable.ic_shopping_cart_black_24dp));
-
-
-        Toast.makeText(MainActivity.this, "Cart Items: "+size, Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.this, "Cart Items: " + size, Toast.LENGTH_LONG).show();
       }
 
       @Override
@@ -284,10 +383,9 @@ public class MainActivity extends AppCompatActivity
   }
 
 
-
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    this.menu=menu;
+    this.menu = menu;
     // Inflate the menu; this adds items to the action bar if it is present.
     getMenuInflater().inflate(R.menu.main_menu, menu);
     countTotalChildFirebase();
@@ -298,7 +396,6 @@ public class MainActivity extends AppCompatActivity
     //invalidateOptionsMenu();
     return super.onCreateOptionsMenu(menu);
   }
-
 
 
   @Override
@@ -312,14 +409,15 @@ public class MainActivity extends AppCompatActivity
     if (id == R.id.action_settings) {
       return true;
     }
-    if (id==R.id.cart_action){
-      FragmentTransaction ft=getSupportFragmentManager().beginTransaction();
+    if (id == R.id.cart_action) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
       ft.replace(R.id.mainFrame, new ProductCartFragment());
       ft.commit();
     }
 
     return super.onOptionsItemSelected(item);
   }
+
 
   @SuppressWarnings("StatementWithEmptyBody")
   @Override
@@ -354,13 +452,13 @@ public class MainActivity extends AppCompatActivity
 
   /**
    * This is method for Sharing App
-   * */
+   */
   private void shareApp() {
-    Intent shareIntent=new Intent(Intent.ACTION_SEND);
+    Intent shareIntent = new Intent(Intent.ACTION_SEND);
     shareIntent.setType("text/plain");
-    String shareText="This is sample E-Commerce App Click here to download:  http://www.mediafire.com/file/d43fmmdg34yo41w/AddToCartBadgeCount.zip";
-    shareIntent.putExtra(Intent.EXTRA_SUBJECT,"HandyCraft");
-    shareIntent.putExtra(Intent.EXTRA_TEXT,shareText);
+    String shareText = "This is sample E-Commerce App Click here to download:  http://www.mediafire.com/file/d43fmmdg34yo41w/AddToCartBadgeCount.zip";
+    shareIntent.putExtra(Intent.EXTRA_SUBJECT, "HandyCraft");
+    shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
     startActivity(Intent.createChooser(shareIntent, "Share via"));
   }
 
@@ -386,6 +484,46 @@ public class MainActivity extends AppCompatActivity
         fab.hide();
 
         break;
+    }
+  }
+
+
+  /**
+   * Download facebook Image
+   */
+  public class DownloadImage extends AsyncTask<String, Void, Bitmap> {
+
+
+    public DownloadImage(CircleImageView bmImage) {
+      imageViewProfile = bmImage;
+    }
+
+    protected Bitmap doInBackground(String... urls) {
+      String urldisplay = urls[0];
+      Bitmap mIcon11 = null;
+      try {
+        InputStream in = new java.net.URL(urldisplay).openStream();
+        mIcon11 = BitmapFactory.decodeStream(in);
+      } catch (Exception e) {
+//        Log.e("Error", e.getMessage());
+        e.printStackTrace();
+      }
+      return mIcon11;
+    }
+
+    protected void onPostExecute(Bitmap result) {
+      imageViewProfile.setImageBitmap(result);
+    }
+  }
+
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+
+    for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+      //System.out.println("@#@");
+      fragment.onActivityResult(requestCode, resultCode, data);
     }
   }
 }

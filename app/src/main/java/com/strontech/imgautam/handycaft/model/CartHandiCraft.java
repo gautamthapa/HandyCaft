@@ -9,7 +9,7 @@ public class CartHandiCraft {
   private String product_mrp;
   private String product_discount;
   private String product_quantity;
-  private String product_spinner_pos;
+  private String product_spinner_pos="1";
   private String product_highlight;
   private String product_desc;
 

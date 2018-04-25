@@ -68,6 +68,12 @@ public class ProductCartRecyclerAdapter extends
     holder.textViewProductName.setText(cartHandiCraft.getProduct_name());
     holder.textViewProductStock.setText(cartHandiCraft.getProduct_quantity());
     holder.textViewProductTotalAmt.setText(cartHandiCraft.getProduct_sp());
+    if (cartHandiCraft.getProduct_spinner_pos() == null){
+      holder.textViewProductQuantity.setText(""+1);
+    }else {
+      holder.textViewProductQuantity.setText(cartHandiCraft.getProduct_spinner_pos());
+
+    }
 
     //numm=handiCraft.getProduct_name();
     Glide.with(context).load(cartHandiCraft.getProduct_image()).into(holder.imageViewProductImage);
@@ -118,8 +124,13 @@ public class ProductCartRecyclerAdapter extends
     TextView textViewProductTotalAmt;
     Spinner spinnerQuantity;
 
+    Button buttonProductQuantityMinus;
+    Button buttonProductQuantityPlus;
+    TextView textViewProductQuantity;
+
     Button buttonRemoveCartItem;
     Button buttonMoveToWishListCartItem;
+
 
     //update price
     DatabaseReference databaseReferenceCart, databaseReferenceInitial;
@@ -133,6 +144,7 @@ public class ProductCartRecyclerAdapter extends
     String product_mrp;
     String product_sp;
     String product_quantity;
+    String product_discount;
     String product_spinner_pos;
     String product_highlight;
     String product_desc;
@@ -141,10 +153,12 @@ public class ProductCartRecyclerAdapter extends
 
 
     List<String> stringList;
+    int initialProductPrice;
+    int countQuantity;
 
 
     int quantity;
-    int amount;
+    int totalAmount;
 
     int a;
 
@@ -162,12 +176,20 @@ public class ProductCartRecyclerAdapter extends
 
       spinnerQuantity = itemView.findViewById(R.id.spinnerQuantity);
 
+      buttonProductQuantityMinus = itemView.findViewById(R.id.buttonProductQuantityMinus);
+      buttonProductQuantityPlus = itemView.findViewById(R.id.buttonProductQuantityPlus);
+      textViewProductQuantity = itemView.findViewById(R.id.textViewProductQuantity);
+
       buttonRemoveCartItem = itemView.findViewById(R.id.buttonRemoveCartItem);
       buttonMoveToWishListCartItem = itemView.findViewById(R.id.buttonMoveToWishListCartItem);
 
       buttonMoveToWishListCartItem.setOnClickListener(this);
+      buttonRemoveCartItem.setOnClickListener(this);
+      buttonProductQuantityPlus.setOnClickListener(this);
+      buttonProductQuantityMinus.setOnClickListener(this);
 
       stringList = new ArrayList<String>();
+     // textViewProductQuantity.setText(""+countQuantity);
       //DatabaseReferences
       databaseReferenceCart = FirebaseDatabase.getInstance().getReference("Cart Items");
       databaseReferenceInitial = FirebaseDatabase.getInstance().getReference("uploads");
@@ -240,7 +262,7 @@ public class ProductCartRecyclerAdapter extends
 
           //databaseReference.setValue(amount)
 
-          Log.d("Product Id","Id"+product_idd);
+          Log.d("Product Id", "Id" + product_idd);
           //get initial price from server
           databaseReferenceInitial.child(product_idd)
               .addValueEventListener(new ValueEventListener() {
@@ -254,14 +276,14 @@ public class ProductCartRecyclerAdapter extends
                   // Log.d("Initial", " Price: " + stringList.get(8));
 
                   //Update
-                  int pri= Integer.parseInt(stringList.get(8));
-                  Log.d("Price","Price"+pri);
+//                  int pri= Integer.parseInt(stringList.get(8));
+                  //                Log.d("Price","Price"+pri);
 
 //                  spinnerPosition=spinnerQuantity.getSelectedItemPosition();
 //                  Log.d("gtm","Position: "+spinnerPosition);
-                //  Log.d("gtm", "Quantity: " + spinnerPosition);
+                  //  Log.d("gtm", "Quantity: " + spinnerPosition);
 
-                  amount = (pri * quantity);
+                  //              amount = (pri * quantity);
                   textViewProductTotalAmt.setText("Rs. " + amount);
                   //spinnerQuantity.setSelection(spinnerPosition);
 // Log.d("Imgautam","Total price"+amount);
@@ -271,6 +293,7 @@ public class ProductCartRecyclerAdapter extends
                       product_mrp,
                       //String.valueOf(quantity),
                       product_quantity,
+                      product_discount,
                       String.valueOf(spinnerPosition),
                       product_highlight,
                       product_desc);
@@ -293,35 +316,7 @@ public class ProductCartRecyclerAdapter extends
       });
     }
 
-    /**
-     * Update price...
-     */
-    private void updatePrice(String id, String price, String product_image, String product_name,
-        String product_mrp,
-        String product_quantity,
-        String product_spinner_pos,
-        String product_highlight,
-        String product_desc) {
 
-      //Toast.makeText(context, "", Toast.LENGTH_SHORT).show();
-      //  Log.d("DatabaseReference: ","FB"+databaseReference.toString());
-
-      CartHandiCraft cartHandiCraft = new CartHandiCraft();
-      cartHandiCraft.setProduct_id(id);
-      cartHandiCraft.setProduct_sp(price);
-      cartHandiCraft.setProduct_image(product_image);
-      cartHandiCraft.setProduct_name(product_name);
-      cartHandiCraft.setProduct_mrp(product_mrp);
-      cartHandiCraft.setProduct_quantity(product_quantity);
-      cartHandiCraft.setProduct_spinner_pos(product_spinner_pos);
-      cartHandiCraft.setProduct_highlight(product_highlight);
-      cartHandiCraft.setProduct_desc(product_desc);
-
-      DatabaseReference df = FirebaseDatabase.getInstance().getReference("Cart Items").child(id);
-      df.setValue(cartHandiCraft);
-      //databaseReference.setValue(cartHandiCraft);
-
-    }
 
 
     /**
@@ -333,48 +328,146 @@ public class ProductCartRecyclerAdapter extends
       final int position = getAdapterPosition();
       CartHandiCraft cartHandiCraft = this.cartHandiCraftList.get(position);
 
-      final int price;
-      int total;
-
       final List<HandiCraft> handiCraftList = new ArrayList<>();
-      //HandiCraft handiCraft=handiCraftList.get(position);
-      if (v.getId() == buttonMoveToWishListCartItem.getId()) {
-        //name=handiCraft.getProduct_name();
-        //Toast.makeText(, ""+name, Toast.LENGTH_SHORT).show();
 
-//get dt
-        DatabaseReference databaseReference1 = FirebaseDatabase.getInstance()
-            .getReference("uploads").child(product_idd);
+      product_idd = cartHandiCraft.getProduct_id();
+      product_image = cartHandiCraft.getProduct_image();
+      product_name = cartHandiCraft.getProduct_name();
+      product_mrp = cartHandiCraft.getProduct_mrp();
+      product_sp = cartHandiCraft.getProduct_sp();
+      product_quantity = cartHandiCraft.getProduct_quantity();
+      product_discount = cartHandiCraft.getProduct_discount();
+      countQuantity = Integer.parseInt(cartHandiCraft.getProduct_spinner_pos());
+      product_highlight = cartHandiCraft.getProduct_highlight();
+      product_desc = cartHandiCraft.getProduct_desc();
 
-        //Log.d("GTM","ID "+product_idd);
+      DatabaseReference databaseReference1 = FirebaseDatabase.getInstance()
+          .getReference("Cart Items").child(cartHandiCraft.getProduct_id());
+      //textViewProductQuantity.setText(""+countQuantity);
+      if (v.getId() == buttonRemoveCartItem.getId()) {
 
-        //handiCraftListss = new ArrayList<>();
-        final String[] pricee = new String[1];
-        final int count = 200;
-        databaseReference1.addValueEventListener(new ValueEventListener() {
-          @Override
-          public void onDataChange(DataSnapshot dataSnapshot) {
+        Log.d("Tag", "Button Clicked");
+        databaseReference1.removeValue();
 
-            for (DataSnapshot post : dataSnapshot.getChildren()) {
-              String str = post.getValue(String.class);
-              //  handiCraftListss.add(str);
 
-            }
-            // Log.d("GTM", "Price: " + handiCraftListss);
-            // Log.d("GTM", "Selling Price: " + handiCraftListss.get(8));
-//            pricee[1] =handiCraftListss.get(8);
-            //  a= Integer.parseInt(handiCraftListss.get(8));
+      } else if (v.getId() == buttonMoveToWishListCartItem.getId()) {
+
+        CartHandiCraft cartHandiCraftWish = new CartHandiCraft();
+        cartHandiCraftWish.setProduct_id(cartHandiCraft.getProduct_id());
+        cartHandiCraftWish.setProduct_image(cartHandiCraft.getProduct_image());
+        cartHandiCraftWish.setProduct_name(cartHandiCraft.getProduct_name());
+        cartHandiCraftWish.setProduct_sp(cartHandiCraft.getProduct_sp());
+        cartHandiCraftWish.setProduct_mrp(cartHandiCraft.getProduct_mrp());
+        cartHandiCraftWish.setProduct_quantity(cartHandiCraft.getProduct_quantity());
+        cartHandiCraftWish.setProduct_discount(cartHandiCraft.getProduct_discount());
+        cartHandiCraftWish.setProduct_highlight(cartHandiCraft.getProduct_highlight());
+        cartHandiCraftWish.setProduct_desc(cartHandiCraft.getProduct_desc());
+
+        DatabaseReference databaseReferenceWish = FirebaseDatabase.getInstance()
+            .getReference("Wish Item")
+            .child(cartHandiCraft.getProduct_id());
+
+        databaseReferenceWish.setValue(cartHandiCraftWish);
+        databaseReference1.removeValue();
+
+      }else if (v.getId() == buttonProductQuantityPlus.getId()) {
+
+        databaseReferenceInitial.child(product_idd).
+            addValueEventListener(new ValueEventListener() {
+              @Override
+              public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                  String initialData = postSnapshot.getValue(String.class);
+                  stringList.add(initialData);
+                }
+
+                initialProductPrice= Integer.parseInt(stringList.get(8));
+                if (countQuantity<Integer.valueOf(product_quantity)){
+                  countQuantity++;
+                  textViewProductQuantity.setText(""+countQuantity);
+                  totalAmount=initialProductPrice*countQuantity;
+                  textViewProductTotalAmt.setText("Rs. "+totalAmount);
+
+                  updatePrice(product_idd, String.valueOf(totalAmount),product_image, product_name,
+                      product_mrp, product_quantity, product_discount, String.valueOf(countQuantity),product_highlight,
+                      product_desc);
+                }else {
+                  Toast.makeText(context, "Invalid quantity", Toast.LENGTH_SHORT).show();
+                }
+
+              }
+
+              @Override
+              public void onCancelled(DatabaseError databaseError) {
+
+              }
+            });
+
+      } else if (v.getId() == buttonProductQuantityMinus.getId()) {
+        databaseReferenceInitial.child(product_idd).
+            addValueEventListener(new ValueEventListener() {
+              @Override
+              public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                  String initialData = postSnapshot.getValue(String.class);
+                  stringList.add(initialData);
+                }
+
+                initialProductPrice= Integer.parseInt(stringList.get(8));
+                if (countQuantity>1){
+                  countQuantity--;
+                  textViewProductQuantity.setText(""+countQuantity);
+                  totalAmount=initialProductPrice*countQuantity;
+                  textViewProductTotalAmt.setText("Rs. "+totalAmount);
+
+
+                  updatePrice(product_idd, String.valueOf(totalAmount),product_image, product_name,
+                      product_mrp, product_quantity, product_discount, String.valueOf(countQuantity),product_highlight,
+                      product_desc);
+                }else {
+                  Toast.makeText(context, "Invalid quantity", Toast.LENGTH_SHORT).show();
+                }
+
+              }
+
+              @Override
+              public void onCancelled(DatabaseError databaseError) {
+
+              }
+            });
+      }
+
+
+
+      /// /
+//
+//
+// databaseReference1.addValueEventListener(new ValueEventListener() {
+//          @Override
+//          public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//            for (DataSnapshot post : dataSnapshot.getChildren()) {
+//              String str = post.getValue(String.class);
+//              //  handiCraftListss.add(str);
+//
+//            }
+//            // Log.d("GTM", "Price: " + handiCraftListss);
+//            // Log.d("GTM", "Selling Price: " + handiCraftListss.get(8));
+////            pricee[1] =handiCraftListss.get(8);
+      //  a= Integer.parseInt(handiCraftListss.get(8));
 //            a=(a*count);
 //
 //            Log.d("GTM", "Selling Price: Inner: "+a);
 
-          }
-
-          @Override
-          public void onCancelled(DatabaseError databaseError) {
-
-          }
-        });
+//
+//
+//          @Override
+//          public void onCancelled(DatabaseError databaseError) {
+//
+//          }
+//        });
 
 //
 //        final DatabaseReference databaseReference1 = FirebaseDatabase.getInstance()
@@ -399,21 +492,56 @@ public class ProductCartRecyclerAdapter extends
 //
 //          }
 //        });
-        // HandiCraft handiCraft1=new HandiCraft();
+      // HandiCraft handiCraft1=new HandiCraft();
 
-        price = Integer.parseInt(cartHandiCraft.getProduct_quantity());
-        total = Integer.parseInt(cartHandiCraft.getProduct_sp());
-        total = total * price;
-        //textViewProductTotalAmt.setText("Rs. "+total);
+//
+//        price = Integer.parseInt(cartHandiCraft.getProduct_quantity());
+//        total = Integer.parseInt(cartHandiCraft.getProduct_sp());
+//        total = total * price;
+      //textViewProductTotalAmt.setText("Rs. "+total);
 
-        //Log.d("Product: ","Name: "+total);
-      }
-      Log.d("GTM", "Selling Price Outer: : " + a);
+      //Log.d("Product: ","Name: "+total);
+
+      // Log.d("GTM", "Selling Price Outer: : " + a);
 //      switch (v.getId()){
 //        case R.id.buttonMoveToWishListCartItem:
+
 //          name=handiCraft.getProduct_name();
 //          Toast.makeText(context, ""+name, Toast.LENGTH_SHORT).show();
 //      }
+
+    }
+
+
+    /**
+     * Update price...
+     */
+    private void updatePrice(String id, String price, String product_image, String product_name,
+        String product_mrp,
+        String product_quantity,
+        String product_discount,
+        String product_spinner_pos,
+        String product_highlight,
+        String product_desc) {
+
+      //Toast.makeText(context, "", Toast.LENGTH_SHORT).show();
+      //  Log.d("DatabaseReference: ","FB"+databaseReference.toString());
+
+      CartHandiCraft cartHandiCraft = new CartHandiCraft();
+      cartHandiCraft.setProduct_id(id);
+      cartHandiCraft.setProduct_sp(price);
+      cartHandiCraft.setProduct_image(product_image);
+      cartHandiCraft.setProduct_name(product_name);
+      cartHandiCraft.setProduct_mrp(product_mrp);
+      cartHandiCraft.setProduct_quantity(product_quantity);
+      cartHandiCraft.setProduct_discount(product_discount);
+      cartHandiCraft.setProduct_spinner_pos(product_spinner_pos);
+      cartHandiCraft.setProduct_highlight(product_highlight);
+      cartHandiCraft.setProduct_desc(product_desc);
+
+      DatabaseReference df = FirebaseDatabase.getInstance().getReference("Cart Items").child(id);
+      df.setValue(cartHandiCraft);
+      //databaseReference.setValue(cartHandiCraft);
 
     }
   }
