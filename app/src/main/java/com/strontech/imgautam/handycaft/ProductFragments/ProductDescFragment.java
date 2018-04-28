@@ -178,8 +178,8 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
 
     if (index == 1) {
 
-      buttonAddToCartItem.setVisibility(View.VISIBLE);
-      buttonAddToCartItem.setVisibility(View.GONE);
+//      buttonAddToCartItem.setVisibility(View.VISIBLE);
+//      buttonAddToCartItem.setVisibility(View.GONE);
 //      String id = databaseReference.push().getKey();
 //
 //      HandiCraft handiCraft = new HandiCraft();

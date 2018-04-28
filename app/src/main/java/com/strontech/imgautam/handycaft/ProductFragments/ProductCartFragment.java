@@ -107,8 +107,6 @@ public class ProductCartFragment extends Fragment {
    */
   private void initObjects() {
 
-    setUpRecyclerView();
-
     cartHandiCrafts = new ArrayList<>();
 
     circleProgressBar.setColorSchemeResources(R.color.colorPrimary);
@@ -189,6 +187,7 @@ public class ProductCartFragment extends Fragment {
         }
         adapter = new ProductCartRecyclerAdapter(getActivity(), cartHandiCrafts);
         recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
         //position=adapter.getItemCount();
 
         textViewItemCount.setText("Rs. "+cartHandiCrafts.size());
@@ -196,7 +195,7 @@ public class ProductCartFragment extends Fragment {
         textViewTotalAmountPayable.setText("Rs. "+sumSp);
         buttonTotalAmount.setText("Rs. "+sumSp);
 
-        Toast.makeText(getActivity(), "Total amount: "+sumSp, Toast.LENGTH_SHORT).show();
+       // Toast.makeText(getActivity(), "Total amount: "+sumSp, Toast.LENGTH_SHORT).show();
       }
 
       @Override

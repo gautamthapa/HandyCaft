@@ -64,33 +64,27 @@ public class ProductCartRecyclerAdapter extends
 
     CartHandiCraft cartHandiCraft = cartHandiCrafts.get(position);
 
-    //Toast.makeText(context, handiCraft.getProduct_name(), Toast.LENGTH_SHORT).show();
+
     holder.textViewProductName.setText(cartHandiCraft.getProduct_name());
-    holder.textViewProductStock.setText(cartHandiCraft.getProduct_quantity());
-    holder.textViewProductTotalAmt.setText(cartHandiCraft.getProduct_sp());
-    if (cartHandiCraft.getProduct_spinner_pos() == null){
+    holder.textViewProductStock.setText("Only "+cartHandiCraft.getProduct_quantity()+" are in stock");
+    holder.textViewProductTotalAmt.setText("Rs. "+cartHandiCraft.getProduct_sp());
+    holder.textViewProductDiscount.setText(cartHandiCraft.getProduct_discount()+" Off");
+  /*  if (cartHandiCraft.getProduct_spinner_pos() == null){
       holder.textViewProductQuantity.setText(""+1);
     }else {
-      holder.textViewProductQuantity.setText(cartHandiCraft.getProduct_spinner_pos());
 
-    }
+    }*/
+    holder.textViewProductQuantity.setText(cartHandiCraft.getProduct_spinner_pos());
 
-    //numm=handiCraft.getProduct_name();
+
     Glide.with(context).load(cartHandiCraft.getProduct_image()).into(holder.imageViewProductImage);
-    //set data to spinner
-    holder.spinnerQuantity.setAdapter(
-        spinnerSetQuantity(Integer.parseInt(cartHandiCraft.getProduct_quantity()))
-    );
-    // spinnerSetQuantity(Integer.parseInt(handiCraft.getProduct_quantity()));
-    // String sp=handiCraft.getProduct_sp();
-//    amount= Integer.parseInt(handiCraft.getProduct_sp());
-    //  Toast.makeText(context, ""+sp, Toast.LENGTH_SHORT).show();
+
   }
 
 
   /**
    * spinnerSetQuantity
-   */
+   *//*
   private ArrayAdapter spinnerSetQuantity(int product_quantity) {
     List<Integer> quantity = new ArrayList<>();
     for (int i = 1; i <= product_quantity; i++) {
@@ -104,7 +98,7 @@ public class ProductCartRecyclerAdapter extends
     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
     return adapter;
-  }
+  }*/
 
   @Override
   public int getItemCount() {
@@ -122,7 +116,8 @@ public class ProductCartRecyclerAdapter extends
     TextView textViewProductName;
     TextView textViewProductStock;
     TextView textViewProductTotalAmt;
-    Spinner spinnerQuantity;
+    TextView textViewProductDiscount;
+
 
     Button buttonProductQuantityMinus;
     Button buttonProductQuantityPlus;
@@ -173,8 +168,8 @@ public class ProductCartRecyclerAdapter extends
       textViewProductName = itemView.findViewById(R.id.textViewProductName);
       textViewProductStock = itemView.findViewById(R.id.textViewProductStock);
       textViewProductTotalAmt = itemView.findViewById(R.id.textViewProductTotalAmt);
+      textViewProductDiscount = itemView.findViewById(R.id.textViewProductDiscount);
 
-      spinnerQuantity = itemView.findViewById(R.id.spinnerQuantity);
 
       buttonProductQuantityMinus = itemView.findViewById(R.id.buttonProductQuantityMinus);
       buttonProductQuantityPlus = itemView.findViewById(R.id.buttonProductQuantityPlus);
@@ -196,124 +191,11 @@ public class ProductCartRecyclerAdapter extends
 
       calculateTotalAmount();
 
-      //Check Data get/////////////////////
-//      int pos=getAdapterPosition()+1;
-//      HandiCraft handiCraft =handiCraftList.get(pos);
-////
-////      Toast.makeText(context, "Price: "+handiCraft.getProduct_sp(), Toast.LENGTH_SHORT).show();
-//
-//
-//      //int pos=getAdapterPosition();
-//      Log.d("Position: ", "At "+handiCraft.getProduct_sp());
-//
-      //---------------------------------------------------------------------------
 
     }
 
     private void calculateTotalAmount() {
 
-//      databaseReferenceCart.child(product_idd).addValueEventListener(new ValueEventListener() {
-//        @Override
-//        public void onDataChange(DataSnapshot dataSnapshot) {
-//
-//        }
-//
-//        @Override
-//        public void onCancelled(DatabaseError databaseError) {
-//
-//        }
-//      });
-//
-      spinnerQuantity.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-          int positions = getAdapterPosition();
-          CartHandiCraft cartHandiCraft = cartHandiCraftList.get(positions);
-
-          a = position;
-          //update price
-          product_idd = cartHandiCraft.getProduct_id();
-          product_image = cartHandiCraft.getProduct_image();
-          product_name = cartHandiCraft.getProduct_name();
-          product_mrp = cartHandiCraft.getProduct_mrp();
-          product_sp = cartHandiCraft.getProduct_sp();
-          product_quantity = cartHandiCraft.getProduct_quantity();
-          product_spinner_pos = cartHandiCraft.getProduct_spinner_pos();
-          product_highlight = cartHandiCraft.getProduct_highlight();
-          product_desc = cartHandiCraft.getProduct_desc();
-
-          quantity = (int) spinnerQuantity.getItemAtPosition(position);
-
-          // spinnerQuantity.setSelection(Integer.parseInt(cartHandiCraft.getProduct_spinner_pos()));
-
-          Log.d("gtm: ", "Position get back" + spinnerPosition);
-//          String spinnerPos=spinnerQuantity.getSelectedItem().toString();
-//          ArrayAdapter myAdapter=(ArrayAdapter)spinnerQuantity.getAdapter();
-//          int pos=myAdapter.getPosition(spinnerPos);
-//          spinnerQuantity.setSelection(pos);
-          spinnerPosition = spinnerQuantity.getSelectedItemPosition();
-          // Log.w("gtm", "Position: " + pos);
-
-          //pos=spinnerQuantity.getLastVisiblePosition();
-          amount = Integer.parseInt(cartHandiCraft.getProduct_sp());
-
-          //databaseReference.setValue(amount)
-
-          Log.d("Product Id", "Id" + product_idd);
-          //get initial price from server
-          databaseReferenceInitial.child(product_idd)
-              .addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                  for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    String initialData = postSnapshot.getValue(String.class);
-                    stringList.add(initialData);
-                  }
-                  // Log.d("Initial", " Price: " + stringList.get(8));
-
-                  //Update
-//                  int pri= Integer.parseInt(stringList.get(8));
-                  //                Log.d("Price","Price"+pri);
-
-//                  spinnerPosition=spinnerQuantity.getSelectedItemPosition();
-//                  Log.d("gtm","Position: "+spinnerPosition);
-                  //  Log.d("gtm", "Quantity: " + spinnerPosition);
-
-                  //              amount = (pri * quantity);
-                  textViewProductTotalAmt.setText("Rs. " + amount);
-                  //spinnerQuantity.setSelection(spinnerPosition);
-// Log.d("Imgautam","Total price"+amount);
-                  updatePrice(product_idd, String.valueOf(amount),
-                      product_image,
-                      product_name,
-                      product_mrp,
-                      //String.valueOf(quantity),
-                      product_quantity,
-                      product_discount,
-                      String.valueOf(spinnerPosition),
-                      product_highlight,
-                      product_desc);
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-              });
-
-
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-
-        }
-      });
     }
 
 
@@ -384,7 +266,9 @@ public class ProductCartRecyclerAdapter extends
 
                 initialProductPrice= Integer.parseInt(stringList.get(8));
                 if (countQuantity<Integer.valueOf(product_quantity)){
+
                   countQuantity++;
+
                   textViewProductQuantity.setText(""+countQuantity);
                   totalAmount=initialProductPrice*countQuantity;
                   textViewProductTotalAmt.setText("Rs. "+totalAmount);
@@ -392,7 +276,9 @@ public class ProductCartRecyclerAdapter extends
                   updatePrice(product_idd, String.valueOf(totalAmount),product_image, product_name,
                       product_mrp, product_quantity, product_discount, String.valueOf(countQuantity),product_highlight,
                       product_desc);
-                }else {
+                }
+                else
+                  {
                   Toast.makeText(context, "Invalid quantity", Toast.LENGTH_SHORT).show();
                 }
 
@@ -541,6 +427,7 @@ public class ProductCartRecyclerAdapter extends
 
       DatabaseReference df = FirebaseDatabase.getInstance().getReference("Cart Items").child(id);
       df.setValue(cartHandiCraft);
+
       //databaseReference.setValue(cartHandiCraft);
 
     }

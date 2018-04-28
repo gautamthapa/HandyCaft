@@ -39,12 +39,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.strontech.imgautam.handycaft.ProductFragments.ProductCartFragment;
+import com.strontech.imgautam.handycaft.ProductFragments.ProductWishListFragment;
 import com.strontech.imgautam.handycaft.R;
 import com.strontech.imgautam.handycaft.broadcast.ConnectivityReceiver;
+import com.strontech.imgautam.handycaft.fragments.HelpFeedbackFragment;
 import com.strontech.imgautam.handycaft.fragments.HomeFragment;
 import com.strontech.imgautam.handycaft.fragments.LoginFragment;
 import com.strontech.imgautam.handycaft.fragments.AccountFragment;
+import com.strontech.imgautam.handycaft.fragments.TermsPolicyFragment;
 import com.strontech.imgautam.handycaft.helper.Converter;
+import com.strontech.imgautam.handycaft.userfragments.UserOrdersFragment;
 import de.hdodenhof.circleimageview.CircleImageView;
 import java.io.InputStream;
 
@@ -431,16 +435,43 @@ public class MainActivity extends AppCompatActivity
       ft.replace(R.id.mainFrame, new HomeFragment());
       ft.commit();
       drawer.closeDrawers();
-    } else if (id == R.id.nav_gallery) {
+    } else if (id == R.id.nav_my_cart) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new ProductCartFragment());
+      ft.commit();
+      drawer.closeDrawers();
 
-    } else if (id == R.id.nav_slideshow) {
+    } else if (id == R.id.nav_my_wish_list) {
 
-    } else if (id == R.id.nav_manage) {
+      FragmentTransaction ft=getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new ProductWishListFragment());
+      ft.commit();
+
+    } else if (id == R.id.nav_my_orders) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new UserOrdersFragment());
+      ft.commit();
+      drawer.closeDrawers();
+
+    } else if (id == R.id.nav_my_account) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new AccountFragment());
+      ft.commit();
+      drawer.closeDrawers();
 
     } else if (id == R.id.nav_share) {
       shareApp();
+    }else if (id == R.id.nav_help_feedback) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new HelpFeedbackFragment());
+      ft.commit();
+      drawer.closeDrawers();
 
-    } else if (id == R.id.nav_send) {
+    }else if (id == R.id.nav_terms_policy) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new TermsPolicyFragment());
+      ft.commit();
+      drawer.closeDrawers();
 
     }
 
