@@ -2,12 +2,19 @@ package com.strontech.imgautam.handycaft.ProductFragments;
 
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,22 +33,31 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.lsjwzh.widget.materialloadingprogressbar.CircleProgressBar;
 import com.strontech.imgautam.handycaft.R;
+import com.strontech.imgautam.handycaft.SellerFragments.AddProductFragment;
+import com.strontech.imgautam.handycaft.activities.LoginActivity;
 import com.strontech.imgautam.handycaft.adapters.ProductCartRecyclerAdapter;
+import com.strontech.imgautam.handycaft.fragments.HomeFragment;
 import com.strontech.imgautam.handycaft.model.CartHandiCraft;
 import com.strontech.imgautam.handycaft.model.HandiCraft;
 import com.strontech.imgautam.handycaft.model.HandiCraft;
+import com.strontech.imgautam.handycaft.userfragments.UserAddressFragment;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ProductCartFragment extends Fragment {
+public class ProductCartFragment extends Fragment implements View.OnClickListener{
 
+  private Toolbar toolbarFragmentCart;
 
   private RecyclerView recyclerView;
 
   private RecyclerView.Adapter adapter;
+
+  private LinearLayout linearLayoutCart;
+  private LinearLayout linearLayoutCartEmpty;
 
   private LinearLayout circleProgressBarLayout;
   private CircleProgressBar circleProgressBar;
@@ -55,9 +71,17 @@ public class ProductCartFragment extends Fragment {
   private TextView textViewTotalAmountPayable;
 
   private Button buttonTotalAmount;
+  private Button buttonShopNow;
   private Button buttonContinueBuy;
 
 
+  //To check user logged in or not
+  SharedPreferences sharedPreferences;
+  SharedPreferences.Editor editor;
+  String email;
+  String email_google;
+  String first_name;
+  String last_name;
 
 
   View view;
@@ -73,12 +97,21 @@ public class ProductCartFragment extends Fragment {
 
 
   @Override
+  public void onResume() {
+    super.onResume();
+    if (((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+      ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+    }
+  }
+
+  @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     // Inflate the layout for this fragment
     view = inflater.inflate(R.layout.fragment_product_cart, container, false);
 
     initViews();
+    initListeners();
     initObjects();
 
     return view;
@@ -89,6 +122,10 @@ public class ProductCartFragment extends Fragment {
    */
   private void initViews() {
 
+    toolbarFragmentCart=view.findViewById(R.id.toolbarFragmentCart);
+
+    linearLayoutCart=view.findViewById(R.id.linearLayoutCart);
+    linearLayoutCartEmpty=view.findViewById(R.id.linearLayoutCartEmpty);
     recyclerView = view.findViewById(R.id.recyclerViewShowCartItems);
 
     circleProgressBarLayout=view.findViewById(R.id.circleProgressBarLayout);
@@ -99,17 +136,31 @@ public class ProductCartFragment extends Fragment {
     textViewTotalAmountPayable=view.findViewById(R.id.textViewTotalAmountPayable);
 
     buttonTotalAmount=view.findViewById(R.id.buttonTotalAmount);
+    buttonShopNow=view.findViewById(R.id.buttonShopNow);
     buttonContinueBuy=view.findViewById(R.id.buttonContinueBuy);
   }
+
+
+  /**
+   * This method ot initialize Listeners
+   */
+  private void initListeners() {
+    buttonShopNow.setOnClickListener(this);
+    buttonContinueBuy.setOnClickListener(this);
+    buttonTotalAmount.setOnClickListener(this);
+  }
+
+
 
   /**
    * This method ot initialize Objects
    */
   private void initObjects() {
 
-    setUpRecyclerView();
-
+    setUpToolbar();
     cartHandiCrafts = new ArrayList<>();
+    sharedPreferences = getActivity().getSharedPreferences("myEmailPass", Context.MODE_PRIVATE);
+
 
     circleProgressBar.setColorSchemeResources(R.color.colorPrimary);
     setUpRecyclerView();
@@ -126,17 +177,23 @@ public class ProductCartFragment extends Fragment {
     if (b != null) {
       initial_price=b.getString("initial_price");
     }
+  }
 
-    Toast.makeText(getActivity(), ""+initial_price, Toast.LENGTH_SHORT).show();
 
-//    HandiCraft handiCraft=new HandiCraft();
-//    Toast.makeText(getActivity(), "Product price: "+handiCraft.getProduct_sp(), Toast.LENGTH_SHORT).show();
+  private void setUpToolbar() {
+    toolbarFragmentCart.setTitle("Your cart");
+    toolbarFragmentCart.setTitleTextColor(Color.WHITE);
+    toolbarFragmentCart.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+    toolbarFragmentCart.setNavigationOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        getActivity().onBackPressed();
+      }
+    });
   }
 
 
   private void setUpRecyclerView() {
-//    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
-//    recyclerView.setLayoutManager(layoutManager);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()){
       @Override
@@ -175,12 +232,6 @@ public class ProductCartFragment extends Fragment {
           cartHandiCrafts.add(cartHandiCraft);
           updatedSpList.add(cartHandiCraft.getProduct_sp());
 
-          //get data....
-//          if (cartHandiCraft != null) {
-//            Log.d("Price: ","Product Price"+cartHandiCraft.getProduct_sp());
-//          }
-          //Toast.makeText(getActivity(), "Price: "+handiCraft.getProduct_sp(), Toast.LENGTH_SHORT).show();
-
         }
         //Toast.makeText(getActivity(), ""+updatedSpList.toString(), Toast.LENGTH_SHORT).show();
         sumSp=0;
@@ -189,14 +240,22 @@ public class ProductCartFragment extends Fragment {
         }
         adapter = new ProductCartRecyclerAdapter(getActivity(), cartHandiCrafts);
         recyclerView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
         //position=adapter.getItemCount();
 
-        textViewItemCount.setText("Rs. "+cartHandiCrafts.size());
-        textViewTotalAmount.setText("Rs. "+sumSp);
-        textViewTotalAmountPayable.setText("Rs. "+sumSp);
-        buttonTotalAmount.setText("Rs. "+sumSp);
+        if (cartHandiCrafts.size()==0){
+          linearLayoutCart.setVisibility(View.GONE);
+          linearLayoutCartEmpty.setVisibility(View.VISIBLE);
+        }else {
+          linearLayoutCartEmpty.setVisibility(View.GONE);
+          linearLayoutCart.setVisibility(View.VISIBLE);
+          textViewItemCount.setText(""+cartHandiCrafts.size());
+          textViewTotalAmount.setText("₹"+sumSp);
+          textViewTotalAmountPayable.setText("₹"+sumSp);
+          buttonTotalAmount.setText("₹"+sumSp);
+        }
 
-        Toast.makeText(getActivity(), "Total amount: "+sumSp, Toast.LENGTH_SHORT).show();
+       // Toast.makeText(getActivity(), "Total amount: "+sumSp, Toast.LENGTH_SHORT).show();
       }
 
       @Override
@@ -204,5 +263,49 @@ public class ProductCartFragment extends Fragment {
 
       }
     });
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+
+      ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+
+  }
+
+
+
+  @Override
+  public void onClick(View v) {
+
+    if (v.getId() == buttonShopNow.getId()){
+      FragmentTransaction ft=getFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new HomeFragment());
+      ft.commit();
+    }else if (v.getId() == buttonContinueBuy.getId()){
+
+
+      goToAddressOrLogin();
+
+    }
+  }
+
+  private void goToAddressOrLogin() {
+
+    email = sharedPreferences.getString("email", null);
+    email_google=sharedPreferences.getString("email_google",null);
+    first_name = sharedPreferences.getString("facebook_first_name", null);
+    last_name = sharedPreferences.getString("facebook_last_name", null);
+
+    if (email !=null || email_google !=null || first_name !=null || last_name !=null){
+      FragmentTransaction ft=getFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new UserAddressFragment());
+      ft.addToBackStack(null);
+      ft.commit();
+    }else {
+      Intent intent=new Intent(getActivity(), LoginActivity.class);
+      startActivity(intent);
+    }
+
   }
 }

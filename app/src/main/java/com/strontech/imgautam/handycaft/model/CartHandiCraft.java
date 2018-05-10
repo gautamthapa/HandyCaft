@@ -5,6 +5,7 @@ public class CartHandiCraft {
   private String product_id;
   private String product_image;
   private String product_name;
+  private String product_reseller_name;
   private String product_sp;
   private String product_mrp;
   private String product_discount;
@@ -17,12 +18,13 @@ public class CartHandiCraft {
   }
 
   public CartHandiCraft(String product_id, String product_image, String product_name,
-      String product_sp, String product_mrp, String product_discount,
+      String product_reseller_name, String product_sp, String product_mrp, String product_discount,
       String product_quantity, String product_spinner_pos, String product_highlight,
       String product_desc) {
     this.product_id = product_id;
     this.product_image = product_image;
     this.product_name = product_name;
+    this.product_reseller_name=product_reseller_name;
     this.product_sp = product_sp;
     this.product_mrp = product_mrp;
     this.product_discount = product_discount;
@@ -54,6 +56,14 @@ public class CartHandiCraft {
 
   public void setProduct_name(String product_name) {
     this.product_name = product_name;
+  }
+
+  public String getProduct_reseller_name() {
+    return product_reseller_name;
+  }
+
+  public void setProduct_reseller_name(String product_reseller_name) {
+    this.product_reseller_name = product_reseller_name;
   }
 
   public String getProduct_sp() {

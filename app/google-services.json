@@ -103,6 +103,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "504811868219-s0kqk58imsb2g6oiktjnir8vcoe7a0s3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.strontech.imgautam.handycaft",
+            "certificate_hash": "2ef6b6b1ec4110641b6ff8b13947c51642097982"
+          }
+        },
+        {
+          "client_id": "504811868219-8k9hl6v2qmdq73hge2qqrpggeain745p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.strontech.imgautam.handycaft",
+            "certificate_hash": "0720dab1df2d1a8e9c4c4c68c32ac737b25b8b63"
+          }
+        },
+        {
           "client_id": "504811868219-3c0ku09tnphnoq3bpvi2b4jng6fsb7rk.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

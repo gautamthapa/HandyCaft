@@ -39,12 +39,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.strontech.imgautam.handycaft.ProductFragments.ProductCartFragment;
+import com.strontech.imgautam.handycaft.ProductFragments.ProductWishListFragment;
 import com.strontech.imgautam.handycaft.R;
 import com.strontech.imgautam.handycaft.broadcast.ConnectivityReceiver;
+import com.strontech.imgautam.handycaft.fragments.HelpFeedbackFragment;
 import com.strontech.imgautam.handycaft.fragments.HomeFragment;
 import com.strontech.imgautam.handycaft.fragments.LoginFragment;
 import com.strontech.imgautam.handycaft.fragments.AccountFragment;
+import com.strontech.imgautam.handycaft.fragments.TermsPolicyFragment;
 import com.strontech.imgautam.handycaft.helper.Converter;
+import com.strontech.imgautam.handycaft.userfragments.UserOrdersFragment;
 import de.hdodenhof.circleimageview.CircleImageView;
 import java.io.InputStream;
 
@@ -63,7 +67,6 @@ public class MainActivity extends AppCompatActivity
   private TextView textViewName;
   private TextView textViewEmail;
   private Toolbar toolbar;
-  private FloatingActionButton fab;
 
 
   //index to identify current nav menu item
@@ -116,7 +119,6 @@ public class MainActivity extends AppCompatActivity
     mHandler = new Handler();
 
     drawer = findViewById(R.id.drawer_layout);
-    fab = findViewById(R.id.fab);
     navigationView = findViewById(R.id.nav_view);
 
     //SharedPreferences
@@ -235,15 +237,6 @@ public class MainActivity extends AppCompatActivity
     //load toolbar titles from string resources
     activityTitles = getResources().getStringArray(R.array.nav_item_activity_titles);
 
-    fab = (FloatingActionButton) findViewById(R.id.fab);
-    fab.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-            .setAction("Action", null).show();
-      }
-    });
-
 
 
     /**
@@ -283,7 +276,7 @@ public class MainActivity extends AppCompatActivity
     ft.add(R.id.mainFrame, new HomeFragment(), "Home");
     ft.commit();
     drawer.closeDrawers();
-    fab.show();
+
   }
 
 
@@ -412,6 +405,7 @@ public class MainActivity extends AppCompatActivity
     if (id == R.id.cart_action) {
       FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
       ft.replace(R.id.mainFrame, new ProductCartFragment());
+      ft.addToBackStack(null);
       ft.commit();
     }
 
@@ -431,16 +425,49 @@ public class MainActivity extends AppCompatActivity
       ft.replace(R.id.mainFrame, new HomeFragment());
       ft.commit();
       drawer.closeDrawers();
-    } else if (id == R.id.nav_gallery) {
+    } else if (id == R.id.nav_my_cart) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new ProductCartFragment());
+      ft.addToBackStack(null);
+      ft.commit();
+      drawer.closeDrawers();
 
-    } else if (id == R.id.nav_slideshow) {
+    } else if (id == R.id.nav_my_wish_list) {
 
-    } else if (id == R.id.nav_manage) {
+      FragmentTransaction ft=getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new ProductWishListFragment());
+      ft.addToBackStack(null);
+      ft.commit();
+
+    } else if (id == R.id.nav_my_orders) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new UserOrdersFragment());
+      ft.addToBackStack(null);
+      ft.commit();
+      drawer.closeDrawers();
+
+    } else if (id == R.id.nav_my_account) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new AccountFragment());
+      ft.addToBackStack(null);
+      ft.commit();
+      drawer.closeDrawers();
 
     } else if (id == R.id.nav_share) {
       shareApp();
+    }else if (id == R.id.nav_help_feedback) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new HelpFeedbackFragment());
+      ft.addToBackStack(null);
+      ft.commit();
+      drawer.closeDrawers();
 
-    } else if (id == R.id.nav_send) {
+    }else if (id == R.id.nav_terms_policy) {
+      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new TermsPolicyFragment());
+      ft.addToBackStack(null);
+      ft.commit();
+      drawer.closeDrawers();
 
     }
 
@@ -469,19 +496,19 @@ public class MainActivity extends AppCompatActivity
       case R.id.linearLayoutUserLoggedIn:
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.mainFrame, new AccountFragment());
+        ft.addToBackStack(null);
         ft.commit();
         Toast.makeText(this, "LoggedIn..", Toast.LENGTH_SHORT).show();
         drawer.closeDrawers();
-        fab.hide();
+
         break;
       case R.id.linearLayoutUserSignUp:
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.mainFrame, new LoginFragment());
-        fragmentTransaction.addToBackStack("addLogin");
-        fragmentTransaction.commit();
-        Toast.makeText(this, "SignUp & Login Fragment", Toast.LENGTH_SHORT).show();
+        Intent intentLogIn=new Intent(MainActivity.this, LoginActivity.class);
+        intentLogIn.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intentLogIn);
         drawer.closeDrawers();
-        fab.hide();
+
+
 
         break;
     }
@@ -521,9 +548,9 @@ public class MainActivity extends AppCompatActivity
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
 
-    for (Fragment fragment : getSupportFragmentManager().getFragments()) {
-      //System.out.println("@#@");
-      fragment.onActivityResult(requestCode, resultCode, data);
-    }
+//    for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+//      //System.out.println("@#@");
+//      fragment.onActivityResult(requestCode, resultCode, data);
+//    }
   }
 }

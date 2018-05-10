@@ -1,6 +1,7 @@
 package com.strontech.imgautam.handycaft.fragments;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,8 +43,11 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -60,7 +64,7 @@ import org.json.JSONObject;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class LoginFragment extends Fragment implements OnClickListener {
+public class LoginFragment extends Fragment implements OnClickListener, GoogleApiClient.OnConnectionFailedListener {
 
   private LinearLayout linearLayoutLogin;
 
@@ -87,9 +91,9 @@ public class LoginFragment extends Fragment implements OnClickListener {
 
   //Google Login
   private Button buttonGoogleLogin;
-  private GoogleSignInOptions googleSignInOptions;
-  private GoogleApiClient googleApiClient;
-  private static final int REQUEST_CODE_GOOGLE_LOGIN=101;
+ // private GoogleSignInOptions googleSignInOptions;
+  private static final int RC_SIGN_IN = 007;
+  private GoogleApiClient mGoogleApiClient;
 
 
   //For Facebook
@@ -135,6 +139,17 @@ public class LoginFragment extends Fragment implements OnClickListener {
     // Inflate the layout for this fragment
     view = inflater.inflate(R.layout.fragment_login, container, false);
 
+      //GoogleNew
+      GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+              .requestEmail()
+              .build();
+
+      mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+              .enableAutoManage(getActivity(), this)
+              .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+              .build();
+
+
     FacebookSdk.sdkInitialize(FacebookSdk.getApplicationContext());
     initViews();
     initListeners();
@@ -161,8 +176,14 @@ public class LoginFragment extends Fragment implements OnClickListener {
     ((AppCompatActivity) getActivity()).getSupportActionBar().show();
   }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        mGoogleApiClient.stopAutoManage(getActivity());
+        mGoogleApiClient.disconnect();
+    }
 
-  /**
+    /**
    * this method is to initialize views
    */
   private void initViews() {
@@ -216,6 +237,10 @@ public class LoginFragment extends Fragment implements OnClickListener {
     sharedPreferences = this.getActivity().getSharedPreferences(FILE, Context.MODE_PRIVATE);
     editor = sharedPreferences.edit();
     //Get firebase auth instance
+
+
+
+
 
 
 
@@ -299,7 +324,7 @@ public class LoginFragment extends Fragment implements OnClickListener {
               if (password.length() < 6) {
                 textInputLayoutPassword.setError("Please enter 6 digit password");
               } else {
-                Toast.makeText(getActivity(), "Auth Failed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), "Auth Failed", Toast.LENGTH_SHORT).show();
               }
             } else {
 
@@ -441,65 +466,117 @@ public class LoginFragment extends Fragment implements OnClickListener {
     request.setParameters(parameters);
     request.executeAsync();
   }
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-
-    //This is For Facebook Login
-    callbackManager.onActivityResult(requestCode, resultCode, data);
-
-
-
-
-    //This is For Google Sign IN
-    if (requestCode==REQUEST_CODE_GOOGLE_LOGIN)
-    {
-      GoogleSignInResult googleSignInResult=Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-      GoogleSignInAccount account=googleSignInResult.getSignInAccount();
-
-      try {
-        String username_google, email_google, profile_pic_google="";
-        username_google=account.getDisplayName();
-        email_google=account.getEmail();
-        profile_pic_google=account.getPhotoUrl().toString();
-
-
-        editor.putString("username_google",username_google);
-        editor.putString("email_google",email_google);
-        editor.putString("profile_pic_google",profile_pic_google);
-        editor.commit();
-
-        //restart activity
-        restartActivity();
-
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.mainFrame, new HomeFragment());
-        ft.commit();
-      }catch (Exception e){
-        Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-      }
-    }else {
-      Toast.makeText(getActivity(), "Login Failed", Toast.LENGTH_SHORT).show();
-    }
-
-  }
 
 
   /**
    * This method For Login Using Google
    * */
   private void logInWithGoogle() {
-    googleSignInOptions=new GoogleSignInOptions.Builder(GoogleSignInOptions
-    .DEFAULT_SIGN_IN).requestEmail().requestProfile().build();
+    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+    startActivityForResult(signInIntent, RC_SIGN_IN);
 
-    googleApiClient=new GoogleApiClient.Builder(getActivity()).addApi(Auth
-    .GOOGLE_SIGN_IN_API, googleSignInOptions).build();
+  }
 
-    Intent googleSignIn=Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-    startActivityForResult(googleSignIn, REQUEST_CODE_GOOGLE_LOGIN);
+  private void handleSignInResult(GoogleSignInResult result) {
+    Log.d(TAG, "handleSignInResult:" + result.isSuccess());
+      Toast.makeText(getActivity(), "handleSignInResult: "+result.isSuccess(), Toast.LENGTH_SHORT).show();
+    if (result.isSuccess()) {
+      // Signed in successfully, show authenticated UI.
+      GoogleSignInAccount acct = result.getSignInAccount();
+
+      Log.e(TAG, "display name: " + acct.getDisplayName());
+
+      String personName = acct.getDisplayName();
+      String personPhotoUrl = acct.getPhotoUrl().toString();
+      String email = acct.getEmail();
+
+      Log.e(TAG, "Name: " + personName + ", email: " + email
+              + ", Image: " + personPhotoUrl);
+
+      Toast.makeText(getActivity(), "Name: " + personName + ", email: " + email
+              + ", Image: " + personPhotoUrl, Toast.LENGTH_SHORT).show();
+
+
+
+      editor.putString("username_google",personName);
+      editor.putString("email_google",email);
+      editor.putString("profile_pic_google",personPhotoUrl);
+      editor.commit();
+
+      //restart activity
+     // restartActivity();
+
+      FragmentTransaction ft = getFragmentManager().beginTransaction();
+      ft.replace(R.id.mainFrame, new HomeFragment());
+      ft.commit();
+
+      /*          *//*Toast.makeText(getActivity(), "Name: " + personName + ", email: " + email
+                    + ", Image: " + personPhotoUrl, Toast.LENGTH_SHORT).show();
+*//*
+       *//*txtName.setText(personName);
+            txtEmail.setText(email);
+            Glide.with(getApplicationContext()).load(personPhotoUrl)
+                    .thumbnail(0.5f)
+                    .crossFade()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(imgProfilePic);
+*//*
+  //          updateUI(true);
+        } else {
+            // Signed out, show unauthenticated UI.
+    //        updateUI(false);*/
+    }
+  }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //This is For Facebook Login
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+
+
+
+
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            handleSignInResult(result);
+            Toast.makeText(getActivity(), "OnActivityResult()"+result, Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+  @Override
+  public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
   }
 
 
+  @Override
+  public void onStart() {
+    super.onStart();
+
+    /*OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+    if (opr.isDone()) {
+      // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
+      // and the GoogleSignInResult will be available instantly.
+      Log.d(TAG, "Got cached sign-in");
+      GoogleSignInResult result = opr.get();
+      handleSignInResult(result);
+    } else {
+      // If the user has not previously signed in on this device or the sign-in has expired,
+      // this asynchronous branch will attempt to sign in the user silently.  Cross-device
+      // single sign-on will occur in this branch.
+      //showProgressDialog();
+      opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+        @Override
+        public void onResult(GoogleSignInResult googleSignInResult) {
+          //      hideProgressDialog();
+          handleSignInResult(googleSignInResult);
+        }
+      });*/
+    //}
+  }
 }
 
 

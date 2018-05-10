@@ -55,8 +55,8 @@ public class ProductRecyclerAdapter extends
 
     HandiCraft handiCraft = handiCrafts.get(position);
     holder.textViewProductName.setText(handiCraft.getProduct_name());
-    holder.textViewProductSP.setText("Rs. " + handiCraft.getProduct_sp());
-    holder.textViewProductMRP.setText("Rs. " + handiCraft.getProduct_mrp());
+    holder.textViewProductSP.setText("₹" + handiCraft.getProduct_sp());
+    holder.textViewProductMRP.setText("₹" + handiCraft.getProduct_mrp());
     holder.textViewProductDiscount.setText(handiCraft.getProduct_discount() + "% off");
 
     strikeThroughText(holder.textViewProductMRP);
@@ -114,6 +114,7 @@ public class ProductRecyclerAdapter extends
       b.putString("product_key", handiCraft.getProduct_id());
       b.putString("product_image", handiCraft.getProduct_image());
       b.putString("product_name", handiCraft.getProduct_name());
+      b.putString("product_reseller_name", handiCraft.getProduct_reseller_name());
       b.putString("product_sp", handiCraft.getProduct_sp());
       b.putString("product_mrp", handiCraft.getProduct_mrp());
       b.putString("product_discount", handiCraft.getProduct_discount());
@@ -128,7 +129,7 @@ public class ProductRecyclerAdapter extends
 
       FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
       ft.replace(R.id.mainFrame, productDescFragment);
-      ft.addToBackStack("Home");
+      ft.addToBackStack(null);
       ft.commit();
     }
   }
