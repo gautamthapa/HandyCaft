@@ -519,20 +519,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     }
 
-                    //Save user data on firebase
 
-                    //databaseReference = FirebaseDatabase.getInstance().getReference("UserInfo");
-
-/*
-
-                    final List<String> stringList = new ArrayList<>();
-                    final List<UserInfo> userInfos = new ArrayList<>();
-                    final ArrayList<String> userInfosEmail = new ArrayList<>();
-*/
-
-                   // UserInfo userInfo = new UserInfo();
-
-                    Log.e("DatabaseReference", "Not null" + databaseReference);
                     if (databaseReference != null) {
                         databaseReference.addValueEventListener(new ValueEventListener() {
                             @Override
