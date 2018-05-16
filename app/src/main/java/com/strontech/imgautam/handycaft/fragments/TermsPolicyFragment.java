@@ -20,65 +20,88 @@ import com.strontech.imgautam.handycaft.R;
 public class TermsPolicyFragment extends Fragment {
 
 
-  private View view;
-  private Toolbar toolbarTermsPolicy;
+    private View view;
+    private Toolbar toolbarTermsPolicy;
 
-  public TermsPolicyFragment() {
-    // Required empty public constructor
-  }
-
-  @Override
-  public void onResume() {
-    super.onResume();
-    if (((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-      ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+    public TermsPolicyFragment() {
+        // Required empty public constructor
     }
-  }
-
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    // Inflate the layout for this fragment
-    view= inflater.inflate(R.layout.fragment_terms_policy, container, false);
-
-    initViews();
-    initListeners();
-    initObjects();
-
-    return view;
-
-  }
-
-  private void initViews() {
-
-    toolbarTermsPolicy=view.findViewById(R.id.toolbarTermsPolicy);
-
-  }
-
-  private void initListeners() {
-
-  }
-
-  private void initObjects() {
 
 
-    toolbarTermsPolicy.setTitle("Terms and Policy");
-    toolbarTermsPolicy.setTitleTextColor(Color.WHITE);
-    toolbarTermsPolicy.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
-    toolbarTermsPolicy.setNavigationOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        FragmentTransaction ft=getFragmentManager().beginTransaction();
-        ft.replace(R.id.mainFrame, new HomeFragment());
-        ft.commit();
-      }
-    });
+    /**
+     * This is override method to hide activity toolbar on onResume method
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        }
+    }
 
-  }
 
-  @Override
-  public void onStop() {
-    super.onStop();
-    ((AppCompatActivity) getActivity()).getSupportActionBar().show();
-  }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        view = inflater.inflate(R.layout.fragment_terms_policy, container, false);
+
+        initViews();
+        initListeners();
+        initObjects();
+
+        return view;
+
+    }
+
+
+    /**
+     * This method for initialization Views
+     */
+    private void initViews() {
+
+        toolbarTermsPolicy = view.findViewById(R.id.toolbarTermsPolicy);
+
+    }
+
+    /**
+     * This method for initialization Listeners
+     */
+    private void initListeners() {
+
+    }
+
+    /**
+     * This method for initialization Objects
+     */
+    private void initObjects() {
+        setupToolbar();
+    }
+
+
+    /**
+     * This method shows toolbar
+     */
+    private void setupToolbar() {
+        toolbarTermsPolicy.setTitle("Terms and Policy");
+        toolbarTermsPolicy.setTitleTextColor(Color.WHITE);
+        toolbarTermsPolicy.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        toolbarTermsPolicy.setNavigationOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.mainFrame, new HomeFragment());
+                ft.commit();
+            }
+        });
+    }
+
+    /**
+     * This is override method to show toolbar of activity
+     */
+    @Override
+    public void onStop() {
+        super.onStop();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+    }
 }

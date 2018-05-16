@@ -3,7 +3,6 @@ package com.strontech.imgautam.handycaft.activities;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -43,17 +42,23 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.strontech.imgautam.handycaft.R;
-import com.strontech.imgautam.handycaft.fragments.HomeFragment;
-import com.strontech.imgautam.handycaft.fragments.RegisterFragment;
 import com.strontech.imgautam.handycaft.helper.InputValidation;
+import com.strontech.imgautam.handycaft.model.UserInfo;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
 
@@ -70,9 +75,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Button buttonLogin;
     private TextView textViewLinkRegister;
 
-    private LoginButton buttonLoginFacebook;
-    private SignInButton buttonGoogleSignIn;
-
 
     private FirebaseAuth auth;
     private ProgressBar progressBar;
@@ -88,7 +90,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //For Facebook
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
-    private ProfileTracker profileTracker;
     private LoginManager loginManager;
     private Button buttonFacebookLogin;
     private URL urlProfilePicure;
@@ -98,7 +99,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private String email;
     private String birthday;
     private String gender;
-    private String TAG = "LoginFragment";
 
 
     private InputValidation inputValidation;
@@ -107,6 +107,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     SharedPreferences.Editor editor;
     String FILE = "myEmailPass";
 
+
+    //user data save on FirebaseDatabase
+    DatabaseReference databaseReference;
+    String emailIdExisted;
+    String username_google, email_google, profile_pic_google;
+
+    List<String> stringList;
+    List<UserInfo> userInfos;
+    List<String> userInfosEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,10 +127,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         initViews();
         initListeners();
         initObjects();
-
-        //Go to back to home fragment
-        //Toolbar toolbar = findViewById(R.id.toolbarLogin);
-
     }
 
 
@@ -150,15 +155,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+
     /**
      * this method is to initialize listeners
      */
     private void initListeners() {
 
-        //facebook
-
-//    callbackManager = CallbackManager.Factory.create();
-//    profileTrack()
         setupFacebook();
         buttonLogin.setOnClickListener(this);
         buttonFacebookLogin.setOnClickListener(this);
@@ -174,19 +176,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void initObjects() {
 
         setupToolbar();
-
         inputValidation = new InputValidation(this);
+
+        userInfos = new ArrayList<>();
+        userInfosEmail = new ArrayList<>();
 
         sharedPreferences = this.getSharedPreferences(FILE, Context.MODE_PRIVATE);
         editor = sharedPreferences.edit();
+        databaseReference = FirebaseDatabase.getInstance().getReference("UserInfo");
+
         //Get firebase auth instance
-
-
         auth = FirebaseAuth.getInstance();
         checkUser();
 
     }
 
+    /**
+     * This method shows toolbar
+     */
     private void setupToolbar() {
         toolbarLogin.setTitle("Sign in");
         toolbarLogin.setTitleTextColor(Color.WHITE);
@@ -199,19 +206,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         });
     }
 
+
+    /**
+     * This method checks user logged in or not
+     */
     private void checkUser() {
 
         if (auth.getCurrentUser() != null) {
-            /*FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.mainFrame, new HomeFragment());
-            ft.commit();*/
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
         }
     }
 
+
     /**
      * this implemented method is to listen the click on view
+     *
+     * @param v to get id of view
      */
     @Override
     public void onClick(View v) {
@@ -221,9 +232,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 EmailAndPasswordSignIn();
                 break;
             case R.id.textViewLinkRegister:
-               Intent intent=new Intent(LoginActivity.this, RegisterActivity.class);
-               intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-               startActivity(intent);
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
                 break;
 
             case R.id.buttonFacebookLogin:
@@ -280,17 +291,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             editor.commit();
 
                             //restart activity
-                            restartActivity();
+                            //restartActivity();
 
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
-                          /*  FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                            ft.replace(R.id.mainFrame, new HomeFragment());
-                            ft.commit();
-*/
-
                         }
-
                     }
                 });
     }
@@ -311,7 +317,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     /**
      * This method Login With Facebook From Button
      */
-
     private void logInWithFacebook() {
         accessTokenTracker.startTracking();
         loginManager.logInWithReadPermissions(this, Arrays
@@ -362,13 +367,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
+    /**
+     * This method gets user data from facebook account
+     *
+     * @param accessToken
+     */
     private void requestObjectUser(final AccessToken accessToken) {
         GraphRequest request = GraphRequest.newMeRequest(accessToken,
                 new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
-                        Log.d(TAG, object.toString());
-                        Log.d(TAG, response.toString());
                         try {
                             userId = object.getString("id");
                             urlProfilePicure = new URL("https://graph.facebook.com/" + userId + "/picture?width=96&height=96");
@@ -383,26 +391,77 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             if (object.has("gender"))
                                 gender = object.getString("gender");
 
-//              Intent main=new Intent(getActivity(), MainActivity.class);
-//              main.putExtra("name", firstName);
-//              main.putExtra("surname", lastName);
-//              main.putExtra("imageUrl", urlProfilePicure.toString());
-//              startActivity(main);
-                            Toast.makeText(LoginActivity.this, "Method called " + firstName + lastName, Toast.LENGTH_LONG).show();
-                            editor.putString("facebook_first_name", firstName);
-                            editor.putString("facebook_last_name", lastName);
-                            editor.putString("facebook_image_url", urlProfilePicure.toString());
-                            editor.commit();
+                            //Save user data on firebase
+
+                            if (databaseReference != null) {
+                                databaseReference.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                        if (userInfosEmail != null) {
+                                            userInfosEmail.clear();
+                                        }
+
+                                        if (dataSnapshot.exists()) {
+                                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                                //    String emailId=postSnapshot.getValue(String.class);
+                                                //  stringList.add(emailId);
+
+                                                UserInfo userInfo = postSnapshot.getValue(UserInfo.class);
+                                                userInfos.add(userInfo);
+                                                userInfosEmail.add(userInfo.getUser_email());
+
+                                            }
+
+                                            if (userInfosEmail.contains(email)) {
+
+                                                saveFbDataOpenMain();
+                                            } else {
+                                                String userId = databaseReference.push().getKey();
+
+                                                UserInfo userInfo1 = new UserInfo();
+
+                                                userInfo1.setUser_id(userId);
+                                                userInfo1.setUser_name(username_google);
+                                                userInfo1.setUser_email(email_google);
+                                                userInfo1.setUser_profile_pic(profile_pic_google);
+
+                                                databaseReference.child(userId).setValue(userInfo1);
 
 
-                            //restart activity
-                            restartActivity();
+                                                saveFbDataOpenMain();
+                                            }
 
-                            /*FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                            ft.replace(R.id.mainFrame, new HomeFragment());
-                            ft.commit();*/
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            startActivity(intent);
+                                            //method
+                                            saveFbDataOpenMain();
+
+
+                                        } else {
+                                            Toast.makeText(LoginActivity.this, "No Database " + userInfosEmail.toString(), Toast.LENGTH_SHORT).show();
+
+                                            String userId = databaseReference.push().getKey();
+
+                                            UserInfo userInfo1 = new UserInfo();
+
+                                            userInfo1.setUser_id(userId);
+                                            userInfo1.setUser_name(firstName + " " + lastName);
+                                            userInfo1.setUser_email(email);
+                                            userInfo1.setUser_profile_pic(urlProfilePicure.toString());
+
+                                            databaseReference.child(userId).setValue(userInfo1);
+
+                                            saveFbDataOpenMain();
+
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                            }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -418,7 +477,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-
     /**
      * This method For Login Using Google
      */
@@ -427,13 +485,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 .DEFAULT_SIGN_IN).requestEmail().requestProfile().build();
         GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API,
-                googleSignInOptions).build();
+                        googleSignInOptions).build();
 
         Intent intent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
         startActivityForResult(intent, REQUEST_CODE_GOOGLE_LOGIN);
-        Log.e("GTM","Intent data"+intent);
     }
 
+
+    /**
+     * This is override method (get data from google account, fb)
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -441,47 +506,102 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //This is For Facebook Login
         callbackManager.onActivityResult(requestCode, resultCode, data);
 
-        Toast.makeText(this, "onActivityResult", Toast.LENGTH_SHORT).show();
-        Log.e("GTM","OnActivity called");
-
-        Log.e("GTM", "Data");
         //This is For Google Sign IN
-        if (requestCode == REQUEST_CODE_GOOGLE_LOGIN){
+        if (requestCode == REQUEST_CODE_GOOGLE_LOGIN) {
             GoogleSignInResult googleSignInResult = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-
-            Log.d("GTM","GoogleSignInResult: "+googleSignInResult.getStatus().toString());
-
             if (googleSignInResult.isSuccess()) {
                 GoogleSignInAccount account = googleSignInResult.getSignInAccount();
-                 Log.e("Account","name: "+account.getDisplayName());
-                 Log.e("Account","email: "+account.getEmail());
-//                 Log.e("Account","photo: "+account.getPhotoUrl().toString());
-                Log.e("GTM", "GoogleSignInAccount: " + account);
                 try {
-                    String username_google, email_google, profile_pic_google = "";
                     username_google = account.getDisplayName();
                     email_google = account.getEmail();
-                    if (account.getPhotoUrl() !=null){
+                    if (account.getPhotoUrl() != null) {
                         profile_pic_google = account.getPhotoUrl().toString();
 
                     }
 
+                    //Save user data on firebase
 
-                    editor.putString("username_google", username_google);
-                    editor.putString("email_google", email_google);
-                    editor.putString("profile_pic_google", profile_pic_google);
-                    editor.commit();
+                    //databaseReference = FirebaseDatabase.getInstance().getReference("UserInfo");
 
-                    //restart activity
-                    restartActivity();
+/*
 
-               /* FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                ft.replace(R.id.mainFrame, new HomeFragment());
-                ft.commit();*/
+                    final List<String> stringList = new ArrayList<>();
+                    final List<UserInfo> userInfos = new ArrayList<>();
+                    final ArrayList<String> userInfosEmail = new ArrayList<>();
+*/
 
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+                   // UserInfo userInfo = new UserInfo();
+
+                    Log.e("DatabaseReference", "Not null" + databaseReference);
+                    if (databaseReference != null) {
+                        databaseReference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                if (userInfosEmail != null) {
+                                    userInfosEmail.clear();
+                                }
+
+                                if (dataSnapshot.exists()) {
+                                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                        //    String emailId=postSnapshot.getValue(String.class);
+                                        //  stringList.add(emailId);
+
+                                        UserInfo userInfo = postSnapshot.getValue(UserInfo.class);
+                                        userInfos.add(userInfo);
+                                        userInfosEmail.add(userInfo.getUser_email());
+
+                                    }
+
+                                    if (userInfosEmail.contains(email_google)) {
+
+                                        saveDataOpenMain();
+                                    } else {
+                                        String userId = databaseReference.push().getKey();
+
+                                        UserInfo userInfo1 = new UserInfo();
+
+                                        userInfo1.setUser_id(userId);
+                                        userInfo1.setUser_name(username_google);
+                                        userInfo1.setUser_email(email_google);
+                                        userInfo1.setUser_profile_pic(profile_pic_google);
+
+                                        databaseReference.child(userId).setValue(userInfo1);
+
+
+                                        saveDataOpenMain();
+                                    }
+
+                                    //method
+                                    saveDataOpenMain();
+
+
+                                } else {
+                                    Toast.makeText(LoginActivity.this, "No Database " + userInfosEmail.toString(), Toast.LENGTH_SHORT).show();
+
+                                    String userId = databaseReference.push().getKey();
+
+                                    UserInfo userInfo1 = new UserInfo();
+
+                                    userInfo1.setUser_id(userId);
+                                    userInfo1.setUser_name(username_google);
+                                    userInfo1.setUser_email(email_google);
+                                    userInfo1.setUser_profile_pic(profile_pic_google);
+
+                                    databaseReference.child(userId).setValue(userInfo1);
+
+                                    saveDataOpenMain();
+
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+                    }
 
 
                 } catch (Exception e) {
@@ -497,5 +617,34 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+    }
+
+    /**
+     * Data save on SharedPreferences and open MainActivity
+     */
+    private void saveDataOpenMain() {
+        editor.putString("username_google", username_google);
+        editor.putString("email_google", email_google);
+        editor.putString("profile_pic_google", profile_pic_google);
+        editor.commit();
+
+        //restart activity
+        // restartActivity();
+
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
+    private void saveFbDataOpenMain(){
+        editor.putString("facebook_first_name", firstName);
+        editor.putString("facebook_last_name", lastName);
+        editor.putString("facebook_email", email);
+        editor.putString("facebook_image_url", urlProfilePicure.toString());
+        editor.commit();
+
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }

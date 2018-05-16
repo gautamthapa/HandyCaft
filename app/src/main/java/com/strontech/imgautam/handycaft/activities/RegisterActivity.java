@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
@@ -23,8 +22,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.strontech.imgautam.handycaft.R;
-import com.strontech.imgautam.handycaft.UserInfo;
-import com.strontech.imgautam.handycaft.fragments.HomeFragment;
 import com.strontech.imgautam.handycaft.helper.InputValidation;
 
 public class RegisterActivity extends Activity implements View.OnClickListener {
@@ -49,14 +46,13 @@ public class RegisterActivity extends Activity implements View.OnClickListener {
 
     private ProgressBar progressBar;
 
-    private UserInfo userInfo;
     private InputValidation inputValidation;
 
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener authStateListener;
-    private DatabaseReference databaseReference;
+    //private FirebaseAuth.AuthStateListener authStateListener;
+    //private DatabaseReference databaseReference;
 
-    private Context context;
+    // private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +69,7 @@ public class RegisterActivity extends Activity implements View.OnClickListener {
      */
     private void initViews() {
 
-        toolbarSignUp=findViewById(R.id.toolbarSignUp);
+        toolbarSignUp = findViewById(R.id.toolbarSignUp);
         linearLayoutRegister = findViewById(R.id.linearLayoutRegister);
 
         textInputLayoutUserName = findViewById(R.id.textInputLayoutUserName);
@@ -120,6 +116,10 @@ public class RegisterActivity extends Activity implements View.OnClickListener {
         }
     }
 
+
+    /**
+     * This method shows toolbar
+     */
     private void setUpToolbar() {
         toolbarSignUp.setTitle("Sign up");
         toolbarSignUp.setTitleTextColor(Color.WHITE);
@@ -132,6 +132,12 @@ public class RegisterActivity extends Activity implements View.OnClickListener {
         });
     }
 
+
+    /**
+     * this implemented method is to listen the click on view
+     *
+     * @param v to get View id
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -187,7 +193,6 @@ public class RegisterActivity extends Activity implements View.OnClickListener {
         progressBar.setVisibility(View.VISIBLE);
 
         //create User
-
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this,
                         new OnCompleteListener<AuthResult>() {
