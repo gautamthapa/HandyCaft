@@ -20,6 +20,7 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.telephony.SmsManager;
 import android.widget.Toast;
+
 import com.strontech.imgautam.handycaft.R;
 import com.strontech.imgautam.handycaft.helper.InputValidation;
 
@@ -59,12 +60,14 @@ public class UserAddressFragment extends Fragment implements View.OnClickListene
     private InputValidation inputValidation;
 
 
-
     public UserAddressFragment() {
         // Required empty public constructor
     }
 
 
+    /**
+     * This is override method to hide activity toolbar on onResume method
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -82,7 +85,6 @@ public class UserAddressFragment extends Fragment implements View.OnClickListene
         initViews();
         initListeners();
         initObjects();
-
 
         return view;
     }
@@ -130,15 +132,18 @@ public class UserAddressFragment extends Fragment implements View.OnClickListene
     private void initObjects() {
         setUpToolbar();
 
-        inputValidation=new InputValidation(getActivity());
+        inputValidation = new InputValidation(getActivity());
 
-        states=getResources().getStringArray(R.array.states_india);
+        states = getResources().getStringArray(R.array.states_india);
 
-        ArrayAdapter<String> arrayAdapter=new ArrayAdapter<>(getActivity(),
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1, states);
         spinnerStates.setAdapter(arrayAdapter);
     }
 
+    /**
+     * This method shows toolbar
+     */
     private void setUpToolbar() {
         toolbarUserAddressFragment.setTitle("Address");
         toolbarUserAddressFragment.setTitleTextColor(Color.WHITE);
@@ -152,22 +157,24 @@ public class UserAddressFragment extends Fragment implements View.OnClickListene
 
     }
 
-
-
-
-
+    /**
+     * this implemented method is to listen the click on view
+     *
+     * @param v to get id of view
+     */
     @Override
     public void onClick(View v) {
 
-        if (v.getId() == buttonSaveAndContinue.getId()){
+        if (v.getId() == buttonSaveAndContinue.getId()) {
             saveUserAddress();
         }
 
     }
 
+
     /**
      * This method is for saving user address
-     * */
+     */
     private void saveUserAddress() {
         if (!inputValidation.isInputEditTextFilled(textInputEditTextUserName, textInputLayoutUserName,
                 "Enter username")) {
@@ -199,50 +206,52 @@ public class UserAddressFragment extends Fragment implements View.OnClickListene
             return;
         }
 
-        if (spinnerStates.getSelectedItemPosition()==0){
+        if (spinnerStates.getSelectedItemPosition() == 0) {
             Toast.makeText(getActivity(), "Please select your state", Toast.LENGTH_SHORT).show();
         }
-        if (!(radioButtonHome.isChecked()) && !(radioButtonOffice.isChecked()) && !(radioButtonOther.isChecked())){
+        if (!(radioButtonHome.isChecked()) && !(radioButtonOffice.isChecked()) && !(radioButtonOther.isChecked())) {
             Toast.makeText(getActivity(), "Please select address type", Toast.LENGTH_SHORT).show();
         }
 
-        String phone=textInputEditTextUserMobNumber.getText().toString().trim();
+        String phone = textInputEditTextUserMobNumber.getText().toString().trim();
 
 
-
-        String msg=" This item is delivered within 3-4 working days. \nThanks for shopping";
+        String msg = " This item is delivered within 3-4 working days. \nThanks for shopping";
         sendOrderDetailsMsg(phone, msg);
     }
 
 
+    /**
+     * This method is to send Order details on phone number
+     *
+     * @param phone customer phone number
+     * @param msg   which message to be send
+     */
     private void sendOrderDetailsMsg(String phone, String msg) {
 
-        if(ActivityCompat.checkSelfPermission(getActivity(),
+        if (ActivityCompat.checkSelfPermission(getActivity(),
                 android.Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED)
-        {
+                != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.SEND_SMS},0);
+                    new String[]{android.Manifest.permission.SEND_SMS}, 0);
             return;
         }
 
+        Random random = new Random();
+        int orderId = (int) (Math.random() * ((1000000 - 11111) + 1)) + 11111;
+        SmsManager smsManager = SmsManager.getDefault();
 
-        Random random=new Random();
-        int orderId= (int)(Math.random()*((1000000-11111)+1))+11111;
-
-        SmsManager smsManager=SmsManager.getDefault();
-
-        smsManager.sendTextMessage(phone,null,"Your order ID "+orderId+"."+msg,null,null);
-
-
+        smsManager.sendTextMessage(phone, null, "Your order ID " + orderId + "." + msg, null, null);
         Toast.makeText(getActivity(), "Purchase details sent via sms.", Toast.LENGTH_SHORT).show();
-
     }
 
+    /**
+     * This is override method to show toolbar of activity
+     */
     @Override
     public void onStop() {
         super.onStop();
-            ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
     }
 }

@@ -64,8 +64,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private Toolbar toolbarLogin;
 
-    private LinearLayout linearLayoutLogin;
-
     private TextInputLayout textInputLayoutEmail;
     private TextInputLayout textInputLayoutPassword;
 
@@ -135,8 +133,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
      */
     private void initViews() {
         toolbarLogin = findViewById(R.id.toolbarLogin);
-
-        linearLayoutLogin = findViewById(R.id.linearLayoutLogin);
 
         textInputLayoutEmail = findViewById(R.id.textInputLayoutEmail);
         textInputLayoutPassword = findViewById(R.id.textInputLayoutPassword);
@@ -290,9 +286,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             editor.putString("password", password);
                             editor.commit();
 
-                            //restart activity
-                            //restartActivity();
-
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
@@ -391,8 +384,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             if (object.has("gender"))
                                 gender = object.getString("gender");
 
-                            //Save user data on firebase
 
+                            //Save user data on database
                             if (databaseReference != null) {
                                 databaseReference.addValueEventListener(new ValueEventListener() {
                                     @Override
@@ -404,9 +397,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                                         if (dataSnapshot.exists()) {
                                             for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                                //    String emailId=postSnapshot.getValue(String.class);
-                                                //  stringList.add(emailId);
-
                                                 UserInfo userInfo = postSnapshot.getValue(UserInfo.class);
                                                 userInfos.add(userInfo);
                                                 userInfosEmail.add(userInfo.getUser_email());
@@ -418,40 +408,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                                 saveFbDataOpenMain();
                                             } else {
                                                 String userId = databaseReference.push().getKey();
-
                                                 UserInfo userInfo1 = new UserInfo();
-
                                                 userInfo1.setUser_id(userId);
                                                 userInfo1.setUser_name(username_google);
                                                 userInfo1.setUser_email(email_google);
                                                 userInfo1.setUser_profile_pic(profile_pic_google);
 
                                                 databaseReference.child(userId).setValue(userInfo1);
-
-
                                                 saveFbDataOpenMain();
                                             }
-
                                             //method
                                             saveFbDataOpenMain();
-
-
                                         } else {
-                                            Toast.makeText(LoginActivity.this, "No Database " + userInfosEmail.toString(), Toast.LENGTH_SHORT).show();
-
                                             String userId = databaseReference.push().getKey();
-
                                             UserInfo userInfo1 = new UserInfo();
-
                                             userInfo1.setUser_id(userId);
                                             userInfo1.setUser_name(firstName + " " + lastName);
                                             userInfo1.setUser_email(email);
                                             userInfo1.setUser_profile_pic(urlProfilePicure.toString());
-
                                             databaseReference.child(userId).setValue(userInfo1);
 
                                             saveFbDataOpenMain();
-
                                         }
                                     }
 
@@ -519,7 +496,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     }
 
-
+                    //Save User information on database
                     if (databaseReference != null) {
                         databaseReference.addValueEventListener(new ValueEventListener() {
                             @Override
@@ -531,8 +508,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                                 if (dataSnapshot.exists()) {
                                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                        //    String emailId=postSnapshot.getValue(String.class);
-                                        //  stringList.add(emailId);
 
                                         UserInfo userInfo = postSnapshot.getValue(UserInfo.class);
                                         userInfos.add(userInfo);
@@ -554,31 +529,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                         userInfo1.setUser_profile_pic(profile_pic_google);
 
                                         databaseReference.child(userId).setValue(userInfo1);
-
-
                                         saveDataOpenMain();
                                     }
-
                                     //method
                                     saveDataOpenMain();
 
-
                                 } else {
-                                    Toast.makeText(LoginActivity.this, "No Database " + userInfosEmail.toString(), Toast.LENGTH_SHORT).show();
 
                                     String userId = databaseReference.push().getKey();
-
                                     UserInfo userInfo1 = new UserInfo();
-
                                     userInfo1.setUser_id(userId);
                                     userInfo1.setUser_name(username_google);
                                     userInfo1.setUser_email(email_google);
                                     userInfo1.setUser_profile_pic(profile_pic_google);
 
                                     databaseReference.child(userId).setValue(userInfo1);
-
                                     saveDataOpenMain();
-
                                 }
                             }
 
@@ -589,8 +555,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         });
 
                     }
-
-
                 } catch (Exception e) {
                     Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -600,14 +564,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 
     /**
-     * Data save on SharedPreferences and open MainActivity
+     * Data save Google user info on SharedPreferences and open MainActivity
      */
     private void saveDataOpenMain() {
         editor.putString("username_google", username_google);
@@ -615,15 +578,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         editor.putString("profile_pic_google", profile_pic_google);
         editor.commit();
 
-        //restart activity
-        // restartActivity();
-
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
-    private void saveFbDataOpenMain(){
+    /**
+     * Data save facebook user info on SharedPreferences and open MainActivity
+     */
+    private void saveFbDataOpenMain() {
         editor.putString("facebook_first_name", firstName);
         editor.putString("facebook_last_name", lastName);
         editor.putString("facebook_email", email);

@@ -4,10 +4,13 @@ package com.strontech.imgautam.handycaft.ProductFragments;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -35,6 +38,7 @@ import com.strontech.imgautam.handycaft.userfragments.UserAddressFragment;
 public class ProductDescFragment extends Fragment implements OnClickListener {
 
 
+    private Toolbar toolbarProductDescFragment;
     private ImageView imageViewProductImage;
 
     private ImageButton imageButtonWishList;
@@ -69,7 +73,6 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
 
     //To check user logged in or not
     SharedPreferences sharedPreferences;
-    SharedPreferences.Editor editor;
     String email;
     String email_google;
     String first_name;
@@ -77,6 +80,17 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
 
     public ProductDescFragment() {
         // Required empty public constructor
+    }
+
+    /**
+     * This is override method to hide activity toolbar on onResume method
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        }
     }
 
 
@@ -87,6 +101,7 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
         view = inflater.inflate(R.layout.fragment_product_desc, container, false);
 
         initViews();
+        initListeners();
         initObjects();
 
         return view;
@@ -98,6 +113,7 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
      */
     private void initViews() {
 
+        toolbarProductDescFragment=view.findViewById(R.id.toolbarProductDescFragment);
         imageViewProductImage = view.findViewById(R.id.imageViewProductImage);
 
         imageButtonWishList = view.findViewById(R.id.imageButtonWishList);
@@ -118,26 +134,59 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
     }
 
 
+
+    /**
+     * This method is to initialize listeners
+     */
+    private void initListeners() {
+        buttonAddToCartItem.setOnClickListener(this);
+        buttonGoToCartItem.setOnClickListener(this);
+        buttonBuyProduct.setOnClickListener(this);
+    }
+
+
     /**
      * This method is to initialize objects
      */
     private void initObjects() {
 
-        buttonAddToCartItem.setOnClickListener(this);
-
-        buttonGoToCartItem.setOnClickListener(this);
-        buttonBuyProduct.setOnClickListener(this);
 
         sharedPreferences = getActivity().getSharedPreferences("myEmailPass", Context.MODE_PRIVATE);
-
-
         databaseReference = FirebaseDatabase.getInstance().getReference("Cart Items");
         Bundle b = getArguments();
         if (b != null) {
             setData(b);
+
+            String pName=b.getString("product_name");
+            setUpToolbar(pName);
         }
     }
 
+
+
+
+    /**
+     * This method shows toolbar
+     */
+    private void setUpToolbar(String prName) {
+        toolbarProductDescFragment.setTitle(prName);
+        toolbarProductDescFragment.setTitleTextColor(Color.WHITE);
+        toolbarProductDescFragment.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        toolbarProductDescFragment.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().onBackPressed();
+            }
+        });
+    }
+
+
+
+    /**
+     * This method to set data on fields
+     *
+     * @param b to get data from Bundle
+     */
     private void setData(Bundle b) {
 
         productId = b.getString("product_key");
@@ -151,7 +200,6 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
         productHighlight = b.getString("product_highlight");
         productDesc = b.getString("product_description");
 
-        Toast.makeText(getActivity(), "" + productDesc, Toast.LENGTH_SHORT).show();
 
         Glide.with(getActivity()).load(productImage).into(imageViewProductImage);
         textViewProductName.setText(productName);
@@ -161,15 +209,24 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
         textViewProductHighlights.setText(productHighlight);
         textViewProductDetails.setText(productDesc);
         textViewProductResellerName.setText(productResellerName);
-
         strikeThroughText(textViewProductMRP);
-
     }
 
+    /**
+     * This method to strike through text
+     *
+     * @param price of product
+     */
     private void strikeThroughText(TextView price) {
         price.setPaintFlags(price.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
     }
 
+
+    /**
+     * this implemented method is to listen the click on view
+     *
+     * @param v to get id of view
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -200,6 +257,7 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
             cartHandiCraft.setProduct_id(productId);
             cartHandiCraft.setProduct_image(productImage);
             cartHandiCraft.setProduct_name(productName);
+            cartHandiCraft.setProduct_reseller_name(productResellerName);
             cartHandiCraft.setProduct_mrp(productMRP);
             cartHandiCraft.setProduct_sp(productSP);
             cartHandiCraft.setProduct_discount(productDiscount);
@@ -217,17 +275,20 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
     }
 
 
+    /**
+     * This method to go to ProductCartFragment
+     */
     private void goToProductCartFragment() {
 
 
-        //Send Initial data to cart fragment
+  /*      //Send Initial data to cart fragment
         Bundle p = new Bundle();
         p.putString("initial_price", productSP);
 
         new ProductCartFragment().setArguments(p);
 
         //==================================
-
+*/
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.mainFrame, new ProductCartFragment());
@@ -236,6 +297,12 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
     }
 
 
+    /**
+     * This method to go AddressFragment
+     * Verify user logged in or not
+     * If logged in go to AddressFragment
+     * Other wise go to Login Activity
+     */
     private void goToAddressFragment() {
 
         email = sharedPreferences.getString("email", null);
@@ -252,6 +319,15 @@ public class ProductDescFragment extends Fragment implements OnClickListener {
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             startActivity(intent);
         }
-
     }
+
+    /**
+     * This is override method to show toolbar of activity
+     */
+    @Override
+    public void onStop() {
+        super.onStop();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+    }
+
 }

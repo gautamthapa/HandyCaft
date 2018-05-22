@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Base64;
 import android.util.Log;
@@ -40,6 +41,7 @@ import com.strontech.imgautam.handycaft.ProductFragments.ProductCartFragment;
 import com.strontech.imgautam.handycaft.ProductFragments.ProductWishListFragment;
 import com.strontech.imgautam.handycaft.R;
 import com.strontech.imgautam.handycaft.broadcast.ConnectivityReceiver;
+import com.strontech.imgautam.handycaft.fragments.AboutAppFragment;
 import com.strontech.imgautam.handycaft.fragments.HelpFeedbackFragment;
 import com.strontech.imgautam.handycaft.fragments.HomeFragment;
 import com.strontech.imgautam.handycaft.fragments.AccountFragment;
@@ -183,6 +185,7 @@ public class MainActivity extends AppCompatActivity
             linearLayoutUserSignUp.setVisibility(View.GONE);
             textViewName.setVisibility(View.GONE);
             textViewEmail.setText(email);
+            imageViewProfile.setImageResource(R.drawable.icon_user);
             loadHomeFragment();
         } else if (first_name != null || last_name != null || fb_email != null || imageUrl != null) {
             linearLayoutUserLogin.setVisibility(View.VISIBLE);
@@ -249,6 +252,7 @@ public class MainActivity extends AppCompatActivity
     private void loadHomeFragment() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.add(R.id.mainFrame, new HomeFragment(), "Home");
+        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         ft.commit();
         drawer.closeDrawers();
     }
@@ -380,10 +384,7 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
         if (id == R.id.cart_action) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrame, new ProductCartFragment());
@@ -410,6 +411,7 @@ public class MainActivity extends AppCompatActivity
 
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrame, new HomeFragment());
+            getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             ft.commit();
             drawer.closeDrawers();
         } else if (id == R.id.nav_my_cart) {
@@ -456,6 +458,12 @@ public class MainActivity extends AppCompatActivity
             ft.commit();
             drawer.closeDrawers();
 
+        }else if (id == R.id.nav_about) {
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrame, new AboutAppFragment());
+            ft.addToBackStack(null);
+            ft.commit();
+            drawer.closeDrawers();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

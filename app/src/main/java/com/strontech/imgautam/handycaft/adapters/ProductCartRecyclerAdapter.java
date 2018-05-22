@@ -68,7 +68,7 @@ public class ProductCartRecyclerAdapter extends
 
 
         holder.textViewProductName.setText(cartHandiCraft.getProduct_name());
-        holder.textViewProductResellerName.setText(cartHandiCraft.getProduct_reseller_name());
+        holder.textViewProductResellerName.setText("Sold by "+cartHandiCraft.getProduct_reseller_name());
         holder.textViewProductStock.setText("Only " + cartHandiCraft.getProduct_quantity() + " are in stock");
         holder.textViewProductTotalAmt.setText("₹" + cartHandiCraft.getProduct_sp());
         holder.textViewProductDiscount.setText(cartHandiCraft.getProduct_discount() + " Off");
@@ -230,7 +230,7 @@ public class ProductCartRecyclerAdapter extends
                                     stringList.add(initialData);
                                 }
 
-                                initialProductPrice = Integer.parseInt(stringList.get(8));
+                                initialProductPrice = Integer.parseInt(stringList.get(9));
                                 if (countQuantity < Integer.valueOf(product_quantity)) {
 
                                     countQuantity++;
@@ -265,7 +265,7 @@ public class ProductCartRecyclerAdapter extends
                                     stringList.add(initialData);
                                 }
 
-                                initialProductPrice = Integer.parseInt(stringList.get(8));
+                                initialProductPrice = Integer.parseInt(stringList.get(9));
                                 if (countQuantity > 1) {
                                     countQuantity--;
                                     textViewProductQuantity.setText("" + countQuantity);

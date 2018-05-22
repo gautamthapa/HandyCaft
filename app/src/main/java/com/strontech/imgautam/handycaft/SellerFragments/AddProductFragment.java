@@ -49,7 +49,6 @@ import java.io.IOException;
  */
 public class AddProductFragment extends Fragment implements OnClickListener {
 
-
     private Toolbar toolbarAddProductFragment;
 
     private TextInputLayout textInputLayoutProductName;
@@ -74,11 +73,8 @@ public class AddProductFragment extends Fragment implements OnClickListener {
     private ImageView imageViewProductImage;
     private Button buttonChooseProductImage;
     private Button buttonAddProduct;
-    private NumberProgressBar number_progress_bar;
-
 
     private Uri filePath;
-
     private StorageReference storageReference;
     private DatabaseReference databaseReference;
 
@@ -89,6 +85,9 @@ public class AddProductFragment extends Fragment implements OnClickListener {
         // Required empty public constructor
     }
 
+    /**
+     * This is override method to hide activity toolbar on onResume method
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -104,8 +103,8 @@ public class AddProductFragment extends Fragment implements OnClickListener {
         view = inflater.inflate(R.layout.fragment_add_product, container, false);
 
         initViews();
+        initListeners();
         initObjects();
-
         return view;
     }
 
@@ -141,21 +140,28 @@ public class AddProductFragment extends Fragment implements OnClickListener {
 
 
     /**
-     * This method is to initialization Objects
+     * This method is to initialize listeners
      */
-    private void initObjects() {
-
-        setUpToolbar();
-
-        storageReference = FirebaseStorage.getInstance().getReference();
-        databaseReference = FirebaseDatabase.getInstance().getReference(Constants.DATABASE_PATH_UPLOADS);
-
-        inputValidation = new InputValidation(getActivity());
-
+    private void initListeners() {
         buttonChooseProductImage.setOnClickListener(this);
         buttonAddProduct.setOnClickListener(this);
     }
 
+
+    /**
+     * This method is to initialization Objects
+     */
+    private void initObjects() {
+        setUpToolbar();
+
+        storageReference = FirebaseStorage.getInstance().getReference();
+        databaseReference = FirebaseDatabase.getInstance().getReference(Constants.DATABASE_PATH_UPLOADS);
+        inputValidation = new InputValidation(getActivity());
+    }
+
+    /**
+     * This method shows toolbar
+     */
     private void setUpToolbar() {
         toolbarAddProductFragment.setTitle("Sell Products");
         toolbarAddProductFragment.setTitleTextColor(Color.WHITE);
@@ -168,6 +174,12 @@ public class AddProductFragment extends Fragment implements OnClickListener {
         });
     }
 
+
+    /**
+     * this implemented method is to listen the click on view
+     *
+     * @param v to get id of view
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -193,6 +205,13 @@ public class AddProductFragment extends Fragment implements OnClickListener {
     }
 
 
+    /**
+     * This is override method (get image from device)
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -214,6 +233,10 @@ public class AddProductFragment extends Fragment implements OnClickListener {
         }
     }
 
+
+    /**
+     * This method is to get image file extension
+     */
     public String getFileExtension(Uri uri) {
         ContentResolver contentResolver = getActivity().getContentResolver();
         MimeTypeMap mime = MimeTypeMap.getSingleton();
@@ -268,7 +291,7 @@ public class AddProductFragment extends Fragment implements OnClickListener {
             progressDialog.show();
 
             StorageReference storageRef = storageReference.child(
-                    Constants.STORAGE_PATH_UPLOADS
+                    Constants.STORAGE_PATH_UPLOADS+System.currentTimeMillis()
                             + "." + getFileExtension(filePath)
             );
 
@@ -319,12 +342,13 @@ public class AddProductFragment extends Fragment implements OnClickListener {
         }
     }
 
+    /**
+     * This is override method to show toolbar of activity
+     */
     @Override
     public void onStop() {
         super.onStop();
-
         ((AppCompatActivity) getActivity()).getSupportActionBar().show();
-
     }
 }
 

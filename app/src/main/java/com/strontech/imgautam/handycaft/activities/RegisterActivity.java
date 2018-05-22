@@ -26,7 +26,6 @@ import com.strontech.imgautam.handycaft.helper.InputValidation;
 
 public class RegisterActivity extends Activity implements View.OnClickListener {
 
-    private LinearLayout linearLayoutRegister;
 
     private Toolbar toolbarSignUp;
     private TextInputLayout textInputLayoutUserName;
@@ -70,7 +69,6 @@ public class RegisterActivity extends Activity implements View.OnClickListener {
     private void initViews() {
 
         toolbarSignUp = findViewById(R.id.toolbarSignUp);
-        linearLayoutRegister = findViewById(R.id.linearLayoutRegister);
 
         textInputLayoutUserName = findViewById(R.id.textInputLayoutUserName);
         textInputLayoutUserEmail = findViewById(R.id.textInputLayoutUserEmail);

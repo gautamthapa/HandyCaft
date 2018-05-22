@@ -171,6 +171,7 @@ public class AccountFragment extends Fragment implements OnClickListener {
             public void onClick(View v) {
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.mainFrame, new HomeFragment());
+                getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 ft.commit();
             }
         });
@@ -250,7 +251,6 @@ public class AccountFragment extends Fragment implements OnClickListener {
     @Override
     public void onStart() {
         super.onStart();
-        //auth.addAuthStateListener(authListener);
     }
 
 
@@ -330,6 +330,7 @@ public class AccountFragment extends Fragment implements OnClickListener {
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.replace(R.id.mainFrame, new HomeFragment());
+        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         ft.commit();
     }
 

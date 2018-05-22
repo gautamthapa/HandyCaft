@@ -134,7 +134,7 @@ public class ProductRecyclerAdapter extends
             productDescFragment.setArguments(b);
 
             AppCompatActivity activity = (AppCompatActivity) v.getContext();
-            Toast.makeText(activity, "" + handiCraft.getProduct_desc(), Toast.LENGTH_SHORT).show();
+
 
             FragmentTransaction ft = activity.getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrame, productDescFragment);

@@ -80,4 +80,15 @@ At handycaft.com your privacy is very important. We do not publish, sell or rent
         <item>Uttarakhand</item>
         <item>West Bengal</item>
     </string-array>
+
+    <string-array name="help_feedback">
+        <item>Select Issue Type</item>
+        <item>General Feedback</item>
+        <item>App Crash/App Not Working</item>
+        <item>Order Related</item>
+        <item>Payment Related</item>
+        <item>Cart Related</item>
+    </string-array>
+
+    <string name="about">HandyCaft is an E-commerce app is the online marketplace of hand made items. We are selling Ceramics and Pottery, Bidri, Dokra, Marble Inlay, Knitting and Crochet, Paper Craft.</string>
 </resources>

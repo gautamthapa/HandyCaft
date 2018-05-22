@@ -26,6 +26,9 @@ public class UserOrdersFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * This is override method to hide activity toolbar on onResume method
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -48,16 +51,16 @@ public class UserOrdersFragment extends Fragment {
 
     /**
      * This method is for initialization views
-     * */
+     */
     private void initViews() {
-        toolbarOrderFragment=view.findViewById(R.id.toolbarOrderFragment);
+        toolbarOrderFragment = view.findViewById(R.id.toolbarOrderFragment);
 
     }
 
 
     /**
      * This method is for initialization Listeners
-     * */
+     */
     private void initListeners() {
 
     }
@@ -65,16 +68,14 @@ public class UserOrdersFragment extends Fragment {
 
     /**
      * This method is for initialization Objects
-     * */
+     */
     private void initObjects() {
-
         setUpToolbar();
-
     }
 
     /**
      * This method is to setup Toolbar
-     * */
+     */
     private void setUpToolbar() {
         toolbarOrderFragment.setTitle("Orders");
         toolbarOrderFragment.setTitleTextColor(Color.WHITE);
@@ -87,11 +88,13 @@ public class UserOrdersFragment extends Fragment {
         });
     }
 
-
+    /**
+     * This is override method to show toolbar of activity
+     */
     @Override
     public void onStop() {
         super.onStop();
-           ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
 
     }
 }

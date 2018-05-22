@@ -4,6 +4,7 @@ package com.strontech.imgautam.handycaft.ProductFragments;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -57,6 +58,9 @@ public class ProductWishListFragment extends Fragment implements OnClickListener
         // Required empty public constructor
     }
 
+    /**
+     * This is override method to hide activity toolbar on onResume method
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -73,15 +77,17 @@ public class ProductWishListFragment extends Fragment implements OnClickListener
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_product_wish_list, container, false);
 
-
         initViews();
         initListeners();
         initObjects();
 
         return view;
-
     }
 
+
+    /**
+     * This method is to initialize views
+     */
     private void initViews() {
 
         toolbarWishListFragment = view.findViewById(R.id.toolbarWishListFragment);
@@ -96,12 +102,33 @@ public class ProductWishListFragment extends Fragment implements OnClickListener
         recyclerViewShowWishListItems = view.findViewById(R.id.recyclerViewShowWishListItems);
     }
 
+
+    /**
+     * This method is to initialize listeners
+     */
     private void initListeners() {
         buttonContinueShopping.setOnClickListener(this);
     }
 
+    /**
+     * This method is to initialize objects
+     */
     private void initObjects() {
+        setUpToolbar();
+        cartHandiCraftList = new ArrayList<CartHandiCraft>();
+        circleProgressBar.setColorSchemeResources(R.color.colorPrimary);
+        setUpRecyclerView();
+        databaseReference = FirebaseDatabase.getInstance().getReference("Wish Item");
+        getDataFromDatabase();
+    }
 
+
+
+
+    /**
+     * This method shows toolbar
+     */
+    private void setUpToolbar() {
         toolbarWishListFragment.setTitle("Wishlist Items");
         toolbarWishListFragment.setTitleTextColor(Color.WHITE);
         toolbarWishListFragment.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
@@ -110,39 +137,27 @@ public class ProductWishListFragment extends Fragment implements OnClickListener
             public void onClick(View v) {
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.mainFrame, new HomeFragment());
+                getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 ft.commit();
             }
         });
 
-        cartHandiCraftList = new ArrayList<CartHandiCraft>();
-
-        circleProgressBar.setColorSchemeResources(R.color.colorPrimary);
-        setUpRecyclerView();
-
-        databaseReference = FirebaseDatabase.getInstance().getReference("Wish Item");
-        getDataFromDatabase();
     }
 
 
+    /**
+     * This method to setup recyclerView
+     * */
     private void setUpRecyclerView() {
-
         recyclerViewShowWishListItems.setLayoutManager(new LinearLayoutManager(getActivity()));
-   /* recyclerViewShowWishListItems.setLayoutManager(new LinearLayoutManager(getActivity()) {
-      @Override
-      public boolean canScrollHorizontally() {
-        return false;
-      }
-
-      @Override
-      public boolean canScrollVertically() {
-        return false;
-      }
-    });*/
         recyclerViewShowWishListItems.setItemAnimator(new DefaultItemAnimator());
 
     }
 
 
+    /**
+     * This method is to get data from FirebaseDatabase
+     * */
     private void getDataFromDatabase() {
 
         circleProgressBarLayout.setVisibility(View.VISIBLE);
@@ -162,7 +177,6 @@ public class ProductWishListFragment extends Fragment implements OnClickListener
                     CartHandiCraft cartHandiCraft = postSnapshot.getValue(CartHandiCraft.class);
                     cartHandiCraftList.add(cartHandiCraft);
                 }
-
 
                 adapter = new ProductWishRecyclerAdapter(getActivity(), cartHandiCraftList);
                 recyclerViewShowWishListItems.setAdapter(adapter);
@@ -184,7 +198,9 @@ public class ProductWishListFragment extends Fragment implements OnClickListener
         });
     }
 
-
+    /**
+     * This is override method to show toolbar of activity
+     */
     @Override
     public void onStop() {
         super.onStop();
@@ -192,12 +208,19 @@ public class ProductWishListFragment extends Fragment implements OnClickListener
 
     }
 
+
+    /**
+     * this implemented method is to listen the click on view
+     *
+     * @param v to get id of view
+     */
     @Override
     public void onClick(View v) {
 
         if (v.getId() == buttonContinueShopping.getId()) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrame, new HomeFragment());
+            getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
             ft.commit();
         }
 
