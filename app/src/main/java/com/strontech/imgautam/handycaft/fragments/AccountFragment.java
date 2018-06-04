@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -25,11 +26,17 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.facebook.login.LoginManager;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.strontech.imgautam.handycaft.ProductFragments.ProductCartFragment;
 import com.strontech.imgautam.handycaft.ProductFragments.ProductWishListFragment;
 import com.strontech.imgautam.handycaft.R;
 import com.strontech.imgautam.handycaft.SellerFragments.AddProductFragment;
+import com.strontech.imgautam.handycaft.activities.LoginActivity;
 import com.strontech.imgautam.handycaft.activities.MainActivity;
 import com.strontech.imgautam.handycaft.userfragments.UserAddressFragment;
 import com.strontech.imgautam.handycaft.userfragments.UserOrdersFragment;
@@ -78,6 +85,9 @@ public class AccountFragment extends Fragment implements OnClickListener {
     SharedPreferences sharedPreferences;
     String email;
 
+
+    //GoogleSignInOptions googleSignInOptions;
+    GoogleApiClient mGoogleApiClient;
 
     /**
      * Empty public constructor
@@ -156,7 +166,7 @@ public class AccountFragment extends Fragment implements OnClickListener {
         auth = FirebaseAuth.getInstance();
         sharedPreferences = getActivity().getSharedPreferences("myEmailPass", Context.MODE_PRIVATE);
 
-        setInformation();
+        checkSetInformation();
     }
 
     /**
@@ -181,7 +191,7 @@ public class AccountFragment extends Fragment implements OnClickListener {
     /**
      * This method is to set all user information
      */
-    private void setInformation() {
+    private void checkSetInformation() {
 
         email = sharedPreferences.getString("email", null);
 
@@ -210,21 +220,21 @@ public class AccountFragment extends Fragment implements OnClickListener {
             textViewUsername.setText(first_name + " " + last_name);
             new AccountFragment.DownloadImage(circleImageViewUserProfilePic).execute(imageUrl);
 
-
         } else if (username_google != null || email_google != null || profile_pic_google != null) {
             //Google
             textViewUsername.setText(username_google);
             textViewUserEmail.setText(email_google);
             Glide.with(getActivity()).load(profile_pic_google).into(circleImageViewUserProfilePic);
+        }else {
+            Intent intent=new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
         }
-
     }
 
     /**
      * This is class to download facebook Image
      */
     public class DownloadImage extends AsyncTask<String, Void, Bitmap> {
-
 
         public DownloadImage(CircleImageView bmImage) {
             circleImageViewUserProfilePic = bmImage;
@@ -250,6 +260,13 @@ public class AccountFragment extends Fragment implements OnClickListener {
 
     @Override
     public void onStart() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        mGoogleApiClient.connect();
         super.onStart();
     }
 
@@ -304,6 +321,7 @@ public class AccountFragment extends Fragment implements OnClickListener {
                 ft4.commit();
                 break;
             case R.id.buttonLogout:
+                gLogout();
                 logout();
                 facebookLogout();
                 break;
@@ -322,33 +340,62 @@ public class AccountFragment extends Fragment implements OnClickListener {
      * This method is to logout
      */
     private void logout() {
-        auth.signOut();
-        sharedPreferences.edit().remove("email").apply();
 
-        //restart activity
-        restartActivity();
+        if (email != null) {
+            auth.signOut();
+            sharedPreferences.edit().remove("email").apply();
 
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.mainFrame, new HomeFragment());
-        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        ft.commit();
+            //restart activity
+            restartActivity();
+
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrame, new HomeFragment());
+            getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            ft.commit();
+        }
     }
+
+
+    /**
+     * This method is to logout from google button
+     * */
+    private void gLogout(){
+
+        if (username_google != null || email_google != null || profile_pic_google != null) {
+            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+                    sharedPreferences.edit().clear().apply();
+                    //restart activity
+                    restartActivity();
+
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    ft.replace(R.id.mainFrame, new HomeFragment());
+                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    ft.commit();
+                }
+            });
+        }
+    }
+
 
 
     /**
      * This method is to Logout from facebook
      */
     private void facebookLogout() {
-        LoginManager.getInstance().logOut();
-        sharedPreferences.edit().clear().apply();
-        //restart activity
-        restartActivity();
 
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.mainFrame, new HomeFragment());
-        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        ft.commit();
+        if (first_name != null || last_name != null || imageUrl != null) {
+            LoginManager.getInstance().logOut();
+            sharedPreferences.edit().clear().apply();
+            //restart activity
+            restartActivity();
 
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.mainFrame, new HomeFragment());
+            getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            ft.commit();
+        }
     }
 
     /**
@@ -361,6 +408,4 @@ public class AccountFragment extends Fragment implements OnClickListener {
         startActivity(intent);
         getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
-
-
 }

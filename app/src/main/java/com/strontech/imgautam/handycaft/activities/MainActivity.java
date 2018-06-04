@@ -436,11 +436,22 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawers();
 
         } else if (id == R.id.nav_my_account) {
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.mainFrame, new AccountFragment());
-            ft.addToBackStack(null);
-            ft.commit();
-            drawer.closeDrawers();
+
+            if (email != null
+                    || first_name != null || last_name != null || fb_email != null || imageUrl != null
+                    || username_google != null || email_google != null || profile_pic_google != null
+                    ) {
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.mainFrame, new AccountFragment());
+                ft.addToBackStack(null);
+                ft.commit();
+                drawer.closeDrawers();
+            } else {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+
+            }
+
 
         } else if (id == R.id.nav_share) {
             shareApp();
@@ -458,7 +469,7 @@ public class MainActivity extends AppCompatActivity
             ft.commit();
             drawer.closeDrawers();
 
-        }else if (id == R.id.nav_about) {
+        } else if (id == R.id.nav_about) {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.mainFrame, new AboutAppFragment());
             ft.addToBackStack(null);

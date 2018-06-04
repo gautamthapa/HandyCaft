@@ -190,3 +190,4 @@ public class AboutAppFragment extends Fragment implements View.OnClickListener {
         }
     }
 }
+
